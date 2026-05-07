@@ -11,232 +11,115 @@
 <title>Calendario — Lot Calc</title>
 <style>
 :root[data-theme="dark"] {
-  --bg:#0c0c0c; --surface:#161616; --surface2:#1e1e1e; --border:#2a2a2a;
-  --green:#4ade80; --green-bg:#0f1f0f;
-  --acc:#f59e0b; --acc-bg:#1a1200; --acc-br:#3a2800; --acc-soft:#181200;
-  --acc-faded:#7a5a1a; --acc-faded-bg:#1a1400; --acc-faded-br:#2e2200;
-  --red:#ef4444; --red-bg:#1c0808; --red-br:#5a1a1a; --red-soft:#1a0808;
-  --blue:#60a5fa; --blue-bg:#0a1220; --blue-br:#1e3a5a; --blue-soft:#0a1010;
-  --text:#e8e8e0; --muted:#777; --faint:#444;
-  --toggle-bg:#1e1e1e;
-  --past-bg:#111; --past-border:#1e1e1e; --past-text:#444;
-  --pill-bg:#2a2a2a; --pill-text:#888;
+  --bg:#0c0c0c;--surface:#161616;--surface2:#1e1e1e;--border:#2a2a2a;
+  --green:#4ade80;--green-bg:#0f1f0f;
+  --acc:#f59e0b;--acc-bg:#1a1200;--acc-br:#3a2800;--acc-soft:#181200;
+  --acc-faded:#7a5a1a;--acc-faded-bg:#1a1400;--acc-faded-br:#2e2200;
+  --red:#ef4444;--red-bg:#1c0808;--red-br:#5a1a1a;--red-soft:#1a0808;
+  --blue:#60a5fa;--blue-bg:#0a1220;--blue-br:#1e3a5a;--blue-soft:#0a1418;
+  --text:#e8e8e0;--muted:#777;--faint:#444;--toggle-bg:#1e1e1e;
+  --past-bg:#111;--past-border:#1e1e1e;--past-text:#444;
 }
 :root[data-theme="light"] {
-  --bg:#f2f2f7; --surface:#ffffff; --surface2:#e8e8ed; --border:#d1d1d6;
-  --green:#16a34a; --green-bg:#f0fdf4;
-  --acc:#d97706; --acc-bg:#fffbeb; --acc-br:#fde68a; --acc-soft:#fffdf5;
-  --acc-faded:#c4892a; --acc-faded-bg:#fef9ee; --acc-faded-br:#fde8aa;
-  --red:#dc2626; --red-bg:#fef2f2; --red-br:#fecaca; --red-soft:#fff5f5;
-  --blue:#2563eb; --blue-bg:#eff6ff; --blue-br:#bfdbfe; --blue-soft:#f0f7ff;
-  --text:#1c1c1e; --muted:#6b6b6b; --faint:#aeaeb2;
-  --toggle-bg:#e5e5ea;
-  --past-bg:#f5f5f7; --past-border:#e5e5ea; --past-text:#b0b0b8;
-  --pill-bg:#e8e8ed; --pill-text:#777;
+  --bg:#f2f2f7;--surface:#ffffff;--surface2:#e8e8ed;--border:#d1d1d6;
+  --green:#16a34a;--green-bg:#f0fdf4;
+  --acc:#d97706;--acc-bg:#fffbeb;--acc-br:#fde68a;--acc-soft:#fffdf5;
+  --acc-faded:#c4892a;--acc-faded-bg:#fef9ee;--acc-faded-br:#fde8aa;
+  --red:#dc2626;--red-bg:#fef2f2;--red-br:#fecaca;--red-soft:#fff5f5;
+  --blue:#2563eb;--blue-bg:#eff6ff;--blue-br:#bfdbfe;--blue-soft:#f0f7ff;
+  --text:#1c1c1e;--muted:#6b6b6b;--faint:#aeaeb2;--toggle-bg:#e5e5ea;
+  --past-bg:#f5f5f7;--past-border:#e5e5ea;--past-text:#b0b0b8;
 }
-
-* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-html { font-size:16px; background:var(--bg); transition:background 0.2s; }
-body {
-  font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;
-  background:var(--bg); color:var(--text); min-height:100vh;
-  display:flex; flex-direction:column;
-  padding-top:env(safe-area-inset-top,0);
-  transition:background 0.2s,color 0.2s;
-}
-
-/* ── Header ── */
-.app-header {
-  padding:14px 20px 12px; border-bottom:1px solid var(--border);
-  display:flex; align-items:center; justify-content:space-between;
-  background:var(--bg); position:sticky; top:0; z-index:10;
-  transition:background 0.2s,border-color 0.2s;
-}
-.header-text .title { font-size:17px; font-weight:700; letter-spacing:-0.4px; }
-.header-text .sub { font-size:11px; color:var(--muted); margin-top:1px; }
-.header-actions { display:flex; align-items:center; gap:8px; }
-.theme-toggle {
-  width:44px; height:26px; background:var(--toggle-bg); border:1px solid var(--border);
-  border-radius:13px; cursor:pointer; position:relative; transition:background 0.2s;
-  flex-shrink:0; touch-action:manipulation;
-}
-.theme-toggle-knob {
-  position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%;
-  background:var(--text); transition:transform 0.2s;
-  display:flex; align-items:center; justify-content:center; font-size:11px;
-}
-[data-theme="light"] .theme-toggle-knob { transform:translateX(18px); }
-
-/* ── Nav tabs ── */
-.nav-tabs {
-  display:flex; border-bottom:1px solid var(--border);
-  background:var(--bg); position:sticky; top:57px; z-index:9;
-}
-.nav-tab {
-  flex:1; padding:11px 0; font-size:13px; font-weight:600; color:var(--muted);
-  text-align:center; cursor:pointer; border-bottom:2px solid transparent;
-  transition:color 0.15s,border-color 0.15s; text-decoration:none;
-}
-.nav-tab.active { color:var(--green); border-bottom-color:var(--green); }
-
-/* ── Controls bar ── */
-.controls-bar {
-  padding:12px 16px; display:flex; flex-direction:column; gap:10px;
-  border-bottom:1px solid var(--border); background:var(--bg);
-  position:sticky; top:98px; z-index:8;
-  transition:background 0.2s;
-}
-.week-nav {
-  display:flex; align-items:center; justify-content:space-between; gap:8px;
-}
-.week-label { font-size:13px; font-weight:600; color:var(--text); text-align:center; flex:1; }
-.week-btn {
-  background:var(--surface2); border:none; color:var(--text); font-size:17px;
-  width:34px; height:34px; border-radius:10px; cursor:pointer; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center;
-  transition:background 0.12s; touch-action:manipulation;
-}
-.week-btn:active { background:var(--border); }
-
-/* ── Impact filters ── */
-.filter-row {
-  display:flex; gap:8px; align-items:center;
-}
-.filter-label { font-size:11px; color:var(--faint); font-weight:600; letter-spacing:0.07em; text-transform:uppercase; flex-shrink:0; }
-.filter-pills { display:flex; gap:6px; flex-wrap:wrap; }
-.fpill {
-  padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600;
-  cursor:pointer; border:1.5px solid; transition:all 0.12s;
-  touch-action:manipulation; -webkit-user-select:none; user-select:none;
-}
-.fpill-high   { border-color:var(--red);  color:var(--red);  background:transparent; }
-.fpill-medium { border-color:var(--acc);  color:var(--acc);  background:transparent; }
-.fpill-low    { border-color:var(--blue); color:var(--blue); background:transparent; }
-.fpill-high.on   { background:var(--red-soft); }
-.fpill-medium.on { background:var(--acc-soft); }
-.fpill-low.on    { background:var(--blue-soft); }
-
-/* ── Scroll body ── */
-.scroll-body {
-  flex:1; padding:16px 16px 40px;
-  display:flex; flex-direction:column;
-  max-width:560px; width:100%; margin:0 auto;
-}
-
-/* ── Status ── */
-.status-box { text-align:center; padding:48px 20px; font-size:14px; color:var(--muted); }
-.spinner {
-  width:26px; height:26px; border:2.5px solid var(--border);
-  border-top-color:var(--green); border-radius:50%;
-  animation:spin 0.7s linear infinite; margin:0 auto 14px;
-}
-@keyframes spin { to { transform:rotate(360deg); } }
-
-/* ── Day group ── */
-.day-group { margin-bottom:8px; }
-.day-header { padding:14px 0 8px; display:flex; align-items:center; gap:8px; }
-.day-name  { font-size:12px; font-weight:700; color:var(--faint); letter-spacing:0.09em; text-transform:uppercase; }
-.day-date  { font-size:13px; color:var(--muted); }
-.day-today { font-size:10px; font-weight:700; background:var(--green); color:#000; padding:2px 8px; border-radius:20px; letter-spacing:0.06em; text-transform:uppercase; }
-[data-theme="light"] .day-today { color:#fff; }
-
-/* ── Event card ── */
-.event-card {
-  border-radius:12px; padding:13px 14px; margin-bottom:7px;
-  border:1px solid; border-left-width:3px;
-  transition:background 0.2s,opacity 0.2s;
-}
-.event-card.impact-High   { background:var(--red-soft);  border-color:var(--red-br);  border-left-color:var(--red); }
-.event-card.impact-Medium { background:var(--acc-soft);  border-color:var(--acc-br);  border-left-color:var(--acc); }
-.event-card.impact-Low    { background:var(--blue-soft); border-color:var(--blue-br); border-left-color:var(--blue); }
-.event-card.past { background:var(--past-bg) !important; border-color:var(--past-border) !important; opacity:0.45; }
-
-.event-top { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:8px; }
-.event-time-wrap { display:flex; flex-direction:column; gap:1px; }
-.event-time {
-  font-size:15px; font-weight:700; letter-spacing:-0.3px; cursor:pointer;
-}
-.impact-High   .event-time { color:var(--red); }
-.impact-Medium .event-time { color:var(--acc); }
-.impact-Low    .event-time { color:var(--blue); }
-.past .event-time { color:var(--past-text) !important; }
-
-.event-time.allday { font-size:11px; font-weight:600; color:var(--muted); padding-top:2px; }
-.event-utc-toggle { font-size:10px; color:var(--faint); cursor:pointer; -webkit-user-select:none; user-select:none; }
-.event-utc-full {
-  display:none; font-size:11px; color:var(--muted);
-  background:var(--surface2); border:1px solid var(--border);
-  border-radius:6px; padding:3px 8px; margin-top:3px;
-}
-.event-utc-full.show { display:block; }
-
-.event-right { display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0; }
-.event-impact-dot {
-  width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:4px;
-}
-.impact-High   .event-impact-dot { background:var(--red); }
-.impact-Medium .event-impact-dot { background:var(--acc); }
-.impact-Low    .event-impact-dot { background:var(--blue); }
-.event-currency {
-  font-size:11px; font-weight:700; letter-spacing:0.07em;
-  padding:2px 7px; border-radius:5px;
-}
-.impact-High   .event-currency { background:var(--red-bg);  color:var(--red);  border:1px solid var(--red-br); }
-.impact-Medium .event-currency { background:var(--acc-bg);  color:var(--acc);  border:1px solid var(--acc-br); }
-.impact-Low    .event-currency { background:var(--blue-bg); color:var(--blue); border:1px solid var(--blue-br); }
-.past .event-currency { background:transparent !important; color:var(--past-text) !important; border-color:var(--past-border) !important; }
-
-.event-title { font-size:14px; font-weight:600; color:var(--text); line-height:1.35; }
-.past .event-title { color:var(--past-text); }
-
-.event-instruments { display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; }
-.instr-pill {
-  font-size:11px; font-weight:600; letter-spacing:0.04em;
-  background:var(--acc-faded-bg); color:var(--acc-faded);
-  border:1px solid var(--acc-faded-br); padding:2px 9px; border-radius:20px;
-}
-.instr-pill.primary {
-  background:var(--acc-bg); color:var(--acc); border-color:var(--acc-br);
-}
-.past .instr-pill, .past .instr-pill.primary {
-  background:transparent; color:var(--past-text); border-color:var(--past-border);
-}
-
-/* ── Error / refresh ── */
-.error-bar {
-  background:var(--red-bg); border:1px solid var(--red-br); border-radius:10px;
-  padding:14px 16px; margin-bottom:12px; font-size:14px; color:var(--red);
-  display:none; align-items:flex-start; gap:10px;
-}
-.error-bar.show { display:flex; }
-.refresh-row { display:flex; justify-content:center; padding:12px 0; }
-.refresh-btn {
-  background:var(--surface2); border:none; color:var(--muted); font-family:inherit;
-  font-size:13px; padding:8px 20px; border-radius:20px; cursor:pointer;
-  display:flex; align-items:center; gap:6px; touch-action:manipulation;
-}
-.refresh-btn:active { background:var(--border); }
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:16px;background:var(--bg);transition:background .2s}
+body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0);transition:background .2s,color .2s}
+.app-header{padding:14px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);position:sticky;top:0;z-index:10;transition:background .2s}
+.header-text .title{font-size:17px;font-weight:700;letter-spacing:-.4px}
+.header-text .sub{font-size:11px;color:var(--muted);margin-top:1px}
+.theme-toggle{width:44px;height:26px;background:var(--toggle-bg);border:1px solid var(--border);border-radius:13px;cursor:pointer;position:relative;flex-shrink:0;touch-action:manipulation}
+.theme-toggle-knob{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:var(--text);transition:transform .2s;display:flex;align-items:center;justify-content:center;font-size:11px}
+[data-theme="light"] .theme-toggle-knob{transform:translateX(18px)}
+.nav-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:57px;z-index:9}
+.nav-tab{flex:1;padding:11px 0;font-size:13px;font-weight:600;color:var(--muted);text-align:center;cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;text-decoration:none}
+.nav-tab.active{color:var(--green);border-bottom-color:var(--green)}
+.controls-bar{padding:12px 16px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:98px;z-index:8}
+.week-nav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.week-label{font-size:13px;font-weight:600;color:var(--text);text-align:center;flex:1}
+.week-btn{background:var(--surface2);border:none;color:var(--text);font-size:17px;width:34px;height:34px;border-radius:10px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
+.week-btn:active{background:var(--border)}
+.filter-row{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}
+.filter-label{font-size:11px;color:var(--faint);font-weight:600;letter-spacing:.07em;text-transform:uppercase;flex-shrink:0;padding-top:5px}
+.filter-pills{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+.fpill{padding:5px 11px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid;transition:all .12s;touch-action:manipulation;-webkit-user-select:none;user-select:none;opacity:.45}
+.fpill.on{opacity:1}
+.fpill-high{border-color:var(--red);color:var(--red);background:transparent}
+.fpill-medium{border-color:var(--acc);color:var(--acc);background:transparent}
+.fpill-low{border-color:var(--blue);color:var(--blue);background:transparent}
+.fpill-high.on{background:var(--red-soft)}
+.fpill-medium.on{background:var(--acc-soft)}
+.fpill-low.on{background:var(--blue-soft)}
+.cur-pills{display:flex;gap:5px;flex-wrap:wrap}
+.cpill{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);color:var(--muted);background:transparent;transition:all .12s;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.cpill.on{border-color:var(--green);color:var(--green);background:var(--green-bg)}
+.scroll-body{flex:1;padding:16px 16px 40px;display:flex;flex-direction:column;max-width:560px;width:100%;margin:0 auto}
+.status-box{text-align:center;padding:48px 20px;font-size:14px;color:var(--muted)}
+.spinner{width:26px;height:26px;border:2.5px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.day-group{margin-bottom:8px}
+.day-header{padding:14px 0 8px;display:flex;align-items:center;gap:8px}
+.day-name{font-size:12px;font-weight:700;color:var(--faint);letter-spacing:.09em;text-transform:uppercase}
+.day-date{font-size:13px;color:var(--muted)}
+.day-today{font-size:10px;font-weight:700;background:var(--green);color:#000;padding:2px 8px;border-radius:20px;letter-spacing:.06em;text-transform:uppercase}
+[data-theme="light"] .day-today{color:#fff}
+.event-card{border-radius:12px;padding:13px 14px;margin-bottom:7px;border:1px solid;border-left-width:3px;transition:background .2s,opacity .2s}
+.event-card.impact-High{background:var(--red-soft);border-color:var(--red-br);border-left-color:var(--red)}
+.event-card.impact-Medium{background:var(--acc-soft);border-color:var(--acc-br);border-left-color:var(--acc)}
+.event-card.impact-Low{background:var(--blue-soft);border-color:var(--blue-br);border-left-color:var(--blue)}
+.event-card.past{background:var(--past-bg)!important;border-color:var(--past-border)!important;border-left-color:var(--past-border)!important;opacity:.4}
+.event-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
+.event-time-wrap{display:flex;flex-direction:column;gap:2px}
+.event-time{font-size:15px;font-weight:700;letter-spacing:-.3px;cursor:pointer}
+.impact-High .event-time{color:var(--red)}
+.impact-Medium .event-time{color:var(--acc)}
+.impact-Low .event-time{color:var(--blue)}
+.past .event-time{color:var(--past-text)!important}
+.event-time.allday{font-size:11px;font-weight:600;color:var(--muted)}
+.event-utc-btn{font-size:10px;color:var(--faint);cursor:pointer;-webkit-user-select:none;user-select:none;letter-spacing:.03em}
+.event-utc-detail{display:none;font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;margin-top:2px}
+.event-utc-detail.show{display:block}
+.event-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.event-currency{font-size:11px;font-weight:700;letter-spacing:.07em;padding:2px 7px;border-radius:5px}
+.impact-High .event-currency{background:var(--red-bg);color:var(--red);border:1px solid var(--red-br)}
+.impact-Medium .event-currency{background:var(--acc-bg);color:var(--acc);border:1px solid var(--acc-br)}
+.impact-Low .event-currency{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-br)}
+.past .event-currency{background:transparent!important;color:var(--past-text)!important;border-color:var(--past-border)!important}
+.event-title{font-size:14px;font-weight:600;color:var(--text);line-height:1.35}
+.past .event-title{color:var(--past-text)}
+.event-instruments{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.instr-pill{font-size:11px;font-weight:600;letter-spacing:.04em;background:var(--acc-faded-bg);color:var(--acc-faded);border:1px solid var(--acc-faded-br);padding:2px 9px;border-radius:20px}
+.instr-pill.primary{background:var(--acc-bg);color:var(--acc);border-color:var(--acc-br)}
+.past .instr-pill,.past .instr-pill.primary{background:transparent;color:var(--past-text);border-color:var(--past-border)}
+.error-bar{background:var(--red-bg);border:1px solid var(--red-br);border-radius:10px;padding:14px 16px;margin-bottom:12px;font-size:14px;color:var(--red);display:none;align-items:flex-start;gap:10px}
+.error-bar.show{display:flex}
+.refresh-row{display:flex;justify-content:center;padding:12px 0}
+.refresh-btn{background:var(--surface2);border:none;color:var(--muted);font-family:inherit;font-size:13px;padding:8px 20px;border-radius:20px;cursor:pointer;touch-action:manipulation}
+.refresh-btn:active{background:var(--border)}
 </style>
 </head>
 <body>
-
 <div class="app-header">
   <div class="header-text">
     <div class="title">Calendario Macro</div>
-    <div class="sub" id="tz-sub">rilevamento fuso orario…</div>
+    <div class="sub" id="tz-sub">Caricamento…</div>
   </div>
-  <div class="header-actions">
-    <button class="theme-toggle" onclick="toggleTheme()">
-      <div class="theme-toggle-knob"><span id="theme-icon">☀️</span></div>
-    </button>
-  </div>
+  <button class="theme-toggle" onclick="toggleTheme()">
+    <div class="theme-toggle-knob"><span id="theme-icon">☀️</span></div>
+  </button>
 </div>
-
 <div class="nav-tabs">
   <a class="nav-tab" href="index.html">Calcolatore</a>
   <a class="nav-tab active" href="calendar.html">Calendario</a>
 </div>
-
 <div class="controls-bar">
   <div class="week-nav">
     <button class="week-btn" onclick="changeWeek(-1)">‹</button>
@@ -246,65 +129,96 @@ body {
   <div class="filter-row">
     <span class="filter-label">Impatto</span>
     <div class="filter-pills">
-      <div class="fpill fpill-high on"   data-impact="High"   onclick="toggleFilter(this)">🔴 Alto</div>
-      <div class="fpill fpill-medium on" data-impact="Medium" onclick="toggleFilter(this)">🟡 Medio</div>
-      <div class="fpill fpill-low on"    data-impact="Low"    onclick="toggleFilter(this)">🔵 Basso</div>
+      <div class="fpill fpill-high on"   id="f-High"   onclick="toggleImpact('High')">🔴 Alto</div>
+      <div class="fpill fpill-medium"    id="f-Medium" onclick="toggleImpact('Medium')">🟡 Medio</div>
+      <div class="fpill fpill-low"       id="f-Low"    onclick="toggleImpact('Low')">🔵 Basso</div>
+    </div>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Valuta</span>
+    <div class="cur-pills" id="cur-pills">
+      <div class="cpill" data-cur="USD" onclick="toggleCur(this)">USD</div>
+      <div class="cpill" data-cur="EUR" onclick="toggleCur(this)">EUR</div>
+      <div class="cpill" data-cur="GBP" onclick="toggleCur(this)">GBP</div>
+      <div class="cpill" data-cur="JPY" onclick="toggleCur(this)">JPY</div>
+      <div class="cpill" data-cur="AUD" onclick="toggleCur(this)">AUD</div>
+      <div class="cpill" data-cur="CAD" onclick="toggleCur(this)">CAD</div>
+      <div class="cpill" data-cur="CHF" onclick="toggleCur(this)">CHF</div>
+      <div class="cpill" data-cur="NZD" onclick="toggleCur(this)">NZD</div>
     </div>
   </div>
 </div>
-
 <div class="scroll-body">
   <div class="error-bar" id="err-bar">
-    <span style="font-size:18px;flex-shrink:0;">⚠</span>
-    <div><div style="font-weight:600;margin-bottom:3px;">Errore caricamento</div><div id="err-msg" style="font-size:13px;opacity:0.8;"></div></div>
+    <span style="font-size:18px;flex-shrink:0">⚠</span>
+    <div><div style="font-weight:600;margin-bottom:3px">Errore caricamento</div><div id="err-msg" style="font-size:13px;opacity:.8"></div></div>
   </div>
-
-  <div id="cal-body">
-    <div class="status-box"><div class="spinner"></div>Caricamento eventi…</div>
-  </div>
-
-  <div class="refresh-row">
-    <button class="refresh-btn" onclick="loadCalendar()">↺ Aggiorna</button>
-  </div>
+  <div id="cal-body"><div class="status-box"><div class="spinner"></div>Caricamento…</div></div>
+  <div class="refresh-row"><button class="refresh-btn" onclick="loadCalendar()">↺ Aggiorna</button></div>
 </div>
-
 <script>
-// ── Detect browser timezone ──
-const USER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
-document.getElementById('tz-sub').textContent = 'Orario locale: ' + USER_TZ.replace('_',' ');
+// ─────────────────────────────────────────────
+// INIT: timezone + theme (wrapped in try/catch)
+// ─────────────────────────────────────────────
+var USER_TZ = 'UTC';
+try {
+  USER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+} catch(e) { console.warn('TZ detection failed', e); }
+document.getElementById('tz-sub').textContent = 'Orario: ' + USER_TZ.replace(/_/g,' ');
 
-// ── Theme ──
-let _t = 'dark';
-try { _t = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme:light)').matches ? 'light' : 'dark'); } catch(e) {}
-setTheme(_t);
+var _savedTheme = 'dark';
+try { _savedTheme = localStorage.getItem('theme') || (_savedTheme); } catch(e){}
+if (window.matchMedia && window.matchMedia('(prefers-color-scheme:light)').matches && !localStorage.getItem('theme')) _savedTheme = 'light';
+setTheme(_savedTheme);
+
 function setTheme(t) {
-  document.documentElement.setAttribute('data-theme', t);
-  document.getElementById('theme-icon').textContent = t==='dark' ? '☀️' : '🌙';
-  const m = document.getElementById('theme-meta');
-  if(m) m.setAttribute('content', t==='dark' ? '#0c0c0c' : '#f2f2f7');
-  try { localStorage.setItem('theme', t); } catch(e) {}
+  try {
+    document.documentElement.setAttribute('data-theme', t);
+    document.getElementById('theme-icon').textContent = t==='dark' ? '☀️' : '🌙';
+    var m = document.getElementById('theme-meta');
+    if (m) m.setAttribute('content', t==='dark' ? '#0c0c0c' : '#f2f2f7');
+    localStorage.setItem('theme', t);
+  } catch(e){}
 }
-function toggleTheme() { setTheme(document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark'); }
+function toggleTheme() {
+  var cur = document.documentElement.getAttribute('data-theme');
+  setTheme(cur==='dark' ? 'light' : 'dark');
+}
 
-// ── Filter state ──
-const activeFilters = new Set(['High','Medium','Low']);
-function toggleFilter(el) {
-  const impact = el.dataset.impact;
-  if (activeFilters.has(impact)) {
-    // Don't allow deselecting all
-    if (activeFilters.size === 1) return;
-    activeFilters.delete(impact);
+// ─────────────────────────────────────────────
+// FILTER STATE
+// default: only High active; no currency filter = show all
+// ─────────────────────────────────────────────
+var activeImpacts = { High: true, Medium: false, Low: false };
+var activeCurrencies = {}; // empty = show all
+
+function toggleImpact(impact) {
+  // Don't allow deselecting if it's the only active one
+  var onCount = Object.values(activeImpacts).filter(Boolean).length;
+  if (activeImpacts[impact] && onCount === 1) return;
+  activeImpacts[impact] = !activeImpacts[impact];
+  var el = document.getElementById('f-' + impact);
+  if (el) el.classList.toggle('on', activeImpacts[impact]);
+  renderFromCache();
+}
+
+function toggleCur(el) {
+  var cur = el.getAttribute('data-cur');
+  if (activeCurrencies[cur]) {
+    delete activeCurrencies[cur];
     el.classList.remove('on');
   } else {
-    activeFilters.add(impact);
+    activeCurrencies[cur] = true;
     el.classList.add('on');
   }
   renderFromCache();
 }
 
-// ── Week state ──
-let weekOffset = 0;
-let cachedEvents = [];
+// ─────────────────────────────────────────────
+// WEEK STATE
+// ─────────────────────────────────────────────
+var weekOffset = 0;
+var cachedEvents = [];
 
 function changeWeek(dir) {
   weekOffset += dir;
@@ -312,209 +226,271 @@ function changeWeek(dir) {
 }
 
 function getWeekBounds(offset) {
-  const now = new Date();
-  const day = now.getDay();
-  const monday = new Date(now);
+  var now = new Date();
+  var day = now.getDay();
+  var monday = new Date(now);
   monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1) + offset * 7);
   monday.setHours(0,0,0,0);
-  const sunday = new Date(monday);
+  var sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
   sunday.setHours(23,59,59,999);
-  return { monday, sunday };
+  return { monday: monday, sunday: sunday };
 }
 
 function fmtWeekLabel(monday, sunday) {
-  const o = { day:'numeric', month:'short' };
-  const l = navigator.language || 'it-IT';
-  return monday.toLocaleDateString(l,o) + ' – ' + sunday.toLocaleDateString(l,{...o,year:'numeric'});
+  try {
+    var o = { day:'numeric', month:'short' };
+    var l = navigator.language || 'it-IT';
+    return monday.toLocaleDateString(l,o) + ' – ' + sunday.toLocaleDateString(l, Object.assign({},o,{year:'numeric'}));
+  } catch(e) { return monday.toDateString() + ' – ' + sunday.toDateString(); }
 }
 
-// ── ET → UTC conversion (handles DST correctly) ──
+// ─────────────────────────────────────────────
+// TIMEZONE CONVERSION: ET → UTC → local browser
+// FF publishes times in US Eastern Time.
+// Strategy: try UTC-4 (EDT) and UTC-5 (EST), 
+// verify each with Intl to find the correct one.
+// ─────────────────────────────────────────────
 function etToUtc(yr, mo, da, h, min) {
-  // FF publishes times in US Eastern Time (America/New_York)
-  // Try UTC-4 (EDT) and UTC-5 (EST), verify with Intl which one is correct
-  for (const off of [4, 5]) {
-    const candidate = new Date(Date.UTC(yr, mo-1, da, h + off, min));
-    const parts = new Intl.DateTimeFormat('en-US', {
-      timeZone: 'America/New_York',
-      hour: 'numeric', minute: 'numeric', hour12: false
-    }).formatToParts(candidate);
-    const ch = parseInt(parts.find(p => p.type==='hour').value) % 24;
-    const cm = parseInt(parts.find(p => p.type==='minute').value);
-    if (ch === h && cm === min) return candidate;
-  }
-  return new Date(Date.UTC(yr, mo-1, da, h + 5, min)); // fallback EST
+  try {
+    for (var i = 0; i < 2; i++) {
+      var off = i === 0 ? 4 : 5;
+      var candidate = new Date(Date.UTC(yr, mo-1, da, h + off, min));
+      var fmt = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York',
+        hour: 'numeric', minute: '2-digit', hour12: false
+      });
+      var parts = fmt.formatToParts(candidate);
+      var hourPart   = parts.find(function(p){ return p.type==='hour'; });
+      var minutePart = parts.find(function(p){ return p.type==='minute'; });
+      if (!hourPart || !minutePart) continue;
+      var ch = parseInt(hourPart.value, 10) % 24;
+      var cm = parseInt(minutePart.value, 10);
+      if (ch === h && cm === min) return candidate;
+    }
+  } catch(e) { console.warn('etToUtc error', e); }
+  // fallback: assume EST (UTC-5)
+  return new Date(Date.UTC(yr, mo-1, da, h + 5, min));
 }
 
-// ── Parse FF time string → UTC Date ──
+// Parse FF date "MM-DD-YYYY" + time "8:30am" → { utcDate, isAllDay }
 function parseFFTime(dateStr, timeStr) {
-  if (!timeStr || ['All Day','Tentative',''].includes(timeStr)) {
-    return { utcDate: null, isAllDay: true };
+  try {
+    if (!timeStr || timeStr === 'All Day' || timeStr === 'Tentative' || timeStr.trim() === '') {
+      return { utcDate: null, isAllDay: true };
+    }
+    var dateParts = (dateStr || '').split('-');
+    if (dateParts.length !== 3) return { utcDate: null, isAllDay: false };
+    var mo = parseInt(dateParts[0], 10);
+    var da = parseInt(dateParts[1], 10);
+    var yr = parseInt(dateParts[2], 10);
+    if (isNaN(mo) || isNaN(da) || isNaN(yr)) return { utcDate: null, isAllDay: false };
+
+    var m = timeStr.match(/^(\d{1,2}):(\d{2})(am|pm)$/i);
+    if (!m) return { utcDate: null, isAllDay: false };
+    var h   = parseInt(m[1], 10);
+    var min = parseInt(m[2], 10);
+    var ap  = m[3].toLowerCase();
+    if (ap === 'pm' && h !== 12) h += 12;
+    if (ap === 'am' && h === 12) h = 0;
+
+    return { utcDate: etToUtc(yr, mo, da, h, min), isAllDay: false };
+  } catch(e) {
+    console.warn('parseFFTime error', dateStr, timeStr, e);
+    return { utcDate: null, isAllDay: false };
   }
-  const [mo, da, yr] = dateStr.split('-').map(Number);
-  const m = timeStr.match(/^(\d+):(\d+)(am|pm)$/i);
-  if (!m) return { utcDate: null, isAllDay: false };
-  let h = parseInt(m[1]);
-  const min = parseInt(m[2]);
-  const ap = m[3].toLowerCase();
-  if (ap === 'pm' && h !== 12) h += 12;
-  if (ap === 'am' && h === 12) h = 0;
-  return { utcDate: etToUtc(yr, mo, da, h, min), isAllDay: false };
 }
 
-// ── Format UTC date in user's local timezone ──
 function fmtLocalTime(utcDate) {
-  if (!utcDate) return '';
-  return utcDate.toLocaleTimeString(navigator.language || 'it-IT', {
-    timeZone: USER_TZ,
-    hour: '2-digit', minute: '2-digit', hour12: false
-  });
-}
-function fmtUtcString(utcDate) {
-  if (!utcDate) return '';
-  return utcDate.toUTCString().replace(/:\d\d GMT/, ' UTC');
+  if (!utcDate) return '—';
+  try {
+    return utcDate.toLocaleTimeString(navigator.language || 'it-IT', {
+      timeZone: USER_TZ, hour: '2-digit', minute: '2-digit', hour12: false
+    });
+  } catch(e) {
+    return utcDate.toUTCString().slice(17,22);
+  }
 }
 
-// ── Fetch from Vercel proxy ──
+function fmtUtcStr(utcDate) {
+  if (!utcDate) return '';
+  try {
+    // Format: "Wed 07 May 14:30 UTC"
+    return utcDate.toUTCString().replace(/:\d\d GMT$/, ' UTC');
+  } catch(e) { return ''; }
+}
+
+// ─────────────────────────────────────────────
+// FETCH
+// ─────────────────────────────────────────────
 async function fetchFF(week) {
-  const url = 'https://lotcal-api.vercel.app/api/calendar?week=' + week;
-  const res = await fetch(url, { cache: 'no-store' });
+  var url = 'https://lotcal-api.vercel.app/api/calendar?week=' + week;
+  var res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) throw new Error('HTTP ' + res.status);
-  return res.text();
+  var text = await res.text();
+  if (!text || text.trim() === '') throw new Error('Risposta vuota dal server');
+  return text;
 }
 
-// ── Parse XML → events array ──
+// ─────────────────────────────────────────────
+// XML PARSE
+// ─────────────────────────────────────────────
 function parseXML(xml) {
-  const doc = new DOMParser().parseFromString(xml, 'text/xml');
-  return Array.from(doc.querySelectorAll('event')).map(e => ({
-    date:     e.querySelector('date')?.textContent?.trim() || '',
-    time:     e.querySelector('time')?.textContent?.trim() || '',
-    currency: e.querySelector('currency')?.textContent?.trim() || '',
-    title:    e.querySelector('title')?.textContent?.trim() || '',
-    impact:   e.querySelector('impact')?.textContent?.trim() || '',
-  })).filter(e => e.date && ['High','Medium','Low'].includes(e.impact));
+  try {
+    var doc = new DOMParser().parseFromString(xml, 'text/xml');
+    var parseError = doc.querySelector('parsererror');
+    if (parseError) throw new Error('XML non valido');
+    var items = Array.from(doc.querySelectorAll('event'));
+    console.log('Total events in feed:', items.length);
+    var result = items.map(function(e) {
+      return {
+        date:     (e.querySelector('date')?.textContent     || '').trim(),
+        time:     (e.querySelector('time')?.textContent     || '').trim(),
+        currency: (e.querySelector('currency')?.textContent || '').trim(),
+        title:    (e.querySelector('title')?.textContent    || '').trim(),
+        impact:   (e.querySelector('impact')?.textContent   || '').trim(),
+      };
+    }).filter(function(e) {
+      return e.date && ['High','Medium','Low'].includes(e.impact);
+    });
+    console.log('Parsed events (High/Med/Low):', result.length);
+    return result;
+  } catch(e) {
+    console.error('parseXML error', e);
+    return [];
+  }
 }
 
-// ── Instrument mapping ──
-const KEYWORD_RULES = [
-  { p:/german|germany|ifo|zew|buba|bundesbank|destatis/i,       primary:['GER40'],               secondary:['EURUSD','EURGBP'] },
-  { p:/ecb|european central bank|euro.?zone|euro.?area|lagarde/i,primary:['EURUSD','EURGBP','GER40'], secondary:[] },
-  { p:/french|france/i,                                          primary:['EURUSD','EURGBP'],     secondary:['GER40'] },
-  { p:/italian|italy/i,                                          primary:['EURUSD'],              secondary:['GER40','EURGBP'] },
-  { p:/crude oil inv|eia crude|oil inv|petroleum inv|cushing/i,  primary:['USOIL'],               secondary:['US500','US100'] },
-  { p:/crude|opec|petroleum|eia|oil price/i,                     primary:['USOIL'],               secondary:['US500'] },
-  { p:/unemployment|jobless|initial claims|continuing claims/i,  primary:['US500','US100'],       secondary:['EURUSD','XAUUSD','USOIL','BTCUSD','AUDJPY'] },
-  { p:/nonfarm|non-farm|nfp/i,                                   primary:['US500','US100','EURUSD','XAUUSD'], secondary:['USOIL','BTCUSD','AUDJPY'] },
-  { p:/fed |fomc|powell|federal reserve|interest rate decision/i,primary:['US500','US100','XAUUSD','EURUSD'], secondary:['USOIL','BTCUSD','AUDJPY','EURGBP'] },
-  { p:/cpi|ppi|inflation|core.*price|price.*index/i,             primary:['US500','US100','XAUUSD'], secondary:['EURUSD','USOIL','BTCUSD'] },
+// ─────────────────────────────────────────────
+// INSTRUMENT MAPPING
+// ─────────────────────────────────────────────
+var KEYWORD_RULES = [
+  { p:/german|germany|ifo|zew|buba|bundesbank|destatis/i,        primary:['GER40'],                    secondary:['EURUSD','EURGBP'] },
+  { p:/ecb|european central bank|euro.?zone|euro.?area|lagarde/i,primary:['EURUSD','EURGBP','GER40'],  secondary:[] },
+  { p:/french|france/i,                                           primary:['EURUSD','EURGBP'],          secondary:['GER40'] },
+  { p:/italian|italy/i,                                           primary:['EURUSD'],                   secondary:['GER40','EURGBP'] },
+  { p:/crude oil inv|eia crude|oil inv|petroleum inv|cushing/i,   primary:['USOIL'],                    secondary:['US500','US100'] },
+  { p:/crude|opec|petroleum|eia|oil price/i,                      primary:['USOIL'],                    secondary:['US500'] },
+  { p:/unemployment|jobless|initial claims|continuing claims/i,   primary:['US500','US100'],            secondary:['EURUSD','XAUUSD','USOIL','BTCUSD','AUDJPY'] },
+  { p:/nonfarm|non-farm|nfp/i,                                    primary:['US500','US100','EURUSD','XAUUSD'], secondary:['USOIL','BTCUSD','AUDJPY'] },
+  { p:/fed |fomc|powell|federal reserve|interest rate/i,          primary:['US500','US100','XAUUSD','EURUSD'], secondary:['USOIL','BTCUSD','AUDJPY','EURGBP'] },
+  { p:/cpi|ppi|inflation|core.*price|price.*index/i,              primary:['US500','US100','XAUUSD'],   secondary:['EURUSD','USOIL','BTCUSD'] },
   { p:/gdp|retail sales|ism|flash.*pmi|services pmi|manufacturing pmi/i, primary:['US500','US100'], secondary:['EURUSD','XAUUSD','USOIL','BTCUSD'] },
-  { p:/gold|silver|metal/i,                                      primary:['XAUUSD'],              secondary:[] },
-  { p:/bitcoin|crypto|btc/i,                                     primary:['BTCUSD'],              secondary:[] },
-  { p:/boe|bank of england|bailey|united kingdom|british/i,      primary:['EURGBP'],              secondary:['EURUSD'] },
-  { p:/rba|reserve bank of australia|australian/i,               primary:['AUDJPY'],              secondary:[] },
-  { p:/boj|bank of japan|ueda|japanese/i,                        primary:['AUDJPY'],              secondary:[] },
+  { p:/gold|silver|metal/i,                                       primary:['XAUUSD'],                   secondary:[] },
+  { p:/bitcoin|crypto|btc/i,                                      primary:['BTCUSD'],                   secondary:[] },
+  { p:/boe|bank of england|bailey|united kingdom|british/i,       primary:['EURGBP'],                   secondary:['EURUSD'] },
+  { p:/rba|reserve bank of australia|australian/i,                primary:['AUDJPY'],                   secondary:[] },
+  { p:/boj|bank of japan|ueda|japanese/i,                         primary:['AUDJPY'],                   secondary:[] },
 ];
-const CUR_FALLBACK = {
-  USD: { primary:['EURUSD','XAUUSD','USOIL','US500','US100'], secondary:['BTCUSD','AUDJPY'] },
-  EUR: { primary:['EURUSD','EURGBP','GER40'],                 secondary:[] },
-  GBP: { primary:['EURGBP'],                                  secondary:['EURUSD'] },
-  AUD: { primary:['AUDJPY'],                                  secondary:[] },
-  JPY: { primary:['AUDJPY'],                                  secondary:[] },
+var CUR_FALLBACK = {
+  USD:{ primary:['EURUSD','XAUUSD','USOIL','US500','US100'], secondary:['BTCUSD','AUDJPY'] },
+  EUR:{ primary:['EURUSD','EURGBP','GER40'], secondary:[] },
+  GBP:{ primary:['EURGBP'], secondary:['EURUSD'] },
+  AUD:{ primary:['AUDJPY'], secondary:[] },
+  JPY:{ primary:['AUDJPY'], secondary:[] },
 };
 function resolveInstruments(currency, title) {
-  for (const rule of KEYWORD_RULES) {
-    if (rule.p.test(title)) return { primary: rule.primary, secondary: rule.secondary };
+  for (var i = 0; i < KEYWORD_RULES.length; i++) {
+    if (KEYWORD_RULES[i].p.test(title)) return KEYWORD_RULES[i];
   }
-  const fb = CUR_FALLBACK[currency];
-  if (fb) return fb;
-  return { primary: [], secondary: [] };
+  return CUR_FALLBACK[currency] || { primary:[], secondary:[] };
 }
 
-// ── Render ──
+// ─────────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────────
+var DAY_NAMES = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+var MONTHS    = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+
 function renderFromCache() {
-  const { monday, sunday } = getWeekBounds(weekOffset);
-  const body = document.getElementById('cal-body');
-
-  const filtered = cachedEvents.filter(ev => {
-    if (!activeFilters.has(ev.impact)) return false;
-    if (!ev.date) return false;
-    const [m,d,y] = ev.date.split('-').map(Number);
-    const dt = new Date(y, m-1, d);
-    return dt >= monday && dt <= sunday;
-  });
-
-  if (!filtered.length) {
-    body.innerHTML = '<div class="status-box">Nessun evento per questa settimana con i filtri selezionati.</div>';
+  var body = document.getElementById('cal-body');
+  if (!cachedEvents.length) {
+    body.innerHTML = '<div class="status-box">Nessun evento caricato. Premi Aggiorna.</div>';
     return;
   }
 
-  // Group by local date (in user timezone)
-  const groups = {};
-  filtered.forEach(ev => {
-    const { utcDate, isAllDay } = parseFFTime(ev.date, ev.time);
-    // Key: use FF date string as stable key (already in ET date, close enough for grouping)
-    const key = ev.date;
+  var bounds = getWeekBounds(weekOffset);
+  var curFilterActive = Object.keys(activeCurrencies).length > 0;
+
+  // Filter
+  var filtered = cachedEvents.filter(function(ev) {
+    if (!activeImpacts[ev.impact]) return false;
+    if (curFilterActive && !activeCurrencies[ev.currency]) return false;
+    // Week bounds check
+    var parts = (ev.date || '').split('-');
+    if (parts.length !== 3) return false;
+    var dt = new Date(parseInt(parts[2],10), parseInt(parts[0],10)-1, parseInt(parts[1],10));
+    return dt >= bounds.monday && dt <= bounds.sunday;
+  });
+
+  console.log('Events after filter:', filtered.length, 'impacts:', JSON.stringify(activeImpacts));
+
+  if (!filtered.length) {
+    body.innerHTML = '<div class="status-box">Nessun evento con i filtri selezionati.</div>';
+    return;
+  }
+
+  // Parse times & group by date key
+  var groups = {};
+  filtered.forEach(function(ev) {
+    var parsed = parseFFTime(ev.date, ev.time);
+    var key = ev.date;
     if (!groups[key]) groups[key] = [];
-    groups[key].push({ ...ev, utcDate, isAllDay });
+    groups[key].push(Object.assign({}, ev, { utcDate: parsed.utcDate, isAllDay: parsed.isAllDay }));
   });
 
-  const DAY_NAMES = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
-  const MONTHS    = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
-  const now = new Date();
-
-  const sortedKeys = Object.keys(groups).sort((a,b) => {
-    const [m1,d1,y1] = a.split('-').map(Number);
-    const [m2,d2,y2] = b.split('-').map(Number);
-    return new Date(y1,m1-1,d1) - new Date(y2,m2-1,d2);
+  // Sort date keys
+  var sortedKeys = Object.keys(groups).sort(function(a, b) {
+    var ap = a.split('-'), bp = b.split('-');
+    var da = new Date(parseInt(ap[2],10), parseInt(ap[0],10)-1, parseInt(ap[1],10));
+    var db = new Date(parseInt(bp[2],10), parseInt(bp[0],10)-1, parseInt(bp[1],10));
+    return da - db;
   });
 
-  let html = '';
-  sortedKeys.forEach(key => {
-    const [mo,da,yr] = key.split('-').map(Number);
-    const dt = new Date(yr, mo-1, da);
-    const isToday = dt.toDateString() === now.toDateString();
+  var now = new Date();
+  var html = '';
 
-    html += `<div class="day-group">
-      <div class="day-header">
-        <span class="day-name">${DAY_NAMES[dt.getDay()]}</span>
-        <span class="day-date">${da} ${MONTHS[mo-1]} ${yr}</span>
-        ${isToday ? '<span class="day-today">Oggi</span>' : ''}
-      </div>`;
+  sortedKeys.forEach(function(key) {
+    var parts = key.split('-');
+    var mo = parseInt(parts[0],10), da = parseInt(parts[1],10), yr = parseInt(parts[2],10);
+    var dt = new Date(yr, mo-1, da);
+    var isToday = dt.toDateString() === now.toDateString();
 
-    // Sort events by time
-    const evs = groups[key].sort((a,b) => {
+    html += '<div class="day-group"><div class="day-header">'
+      + '<span class="day-name">' + (DAY_NAMES[dt.getDay()]||'') + '</span>'
+      + '<span class="day-date">' + da + ' ' + (MONTHS[mo-1]||'') + ' ' + yr + '</span>'
+      + (isToday ? '<span class="day-today">Oggi</span>' : '')
+      + '</div>';
+
+    // Sort events by utcDate
+    var evs = groups[key].slice().sort(function(a,b) {
       if (!a.utcDate) return -1;
       if (!b.utcDate) return 1;
       return a.utcDate - b.utcDate;
     });
 
-    evs.forEach(ev => {
-      const localTime = ev.isAllDay ? 'All Day' : fmtLocalTime(ev.utcDate);
-      const utcStr    = ev.isAllDay ? '' : fmtUtcString(ev.utcDate);
-      const isPast    = !ev.isAllDay && ev.utcDate && ev.utcDate < now;
-      const uid       = 'u' + Math.random().toString(36).slice(2,8);
+    evs.forEach(function(ev) {
+      var localTime = ev.isAllDay ? 'All Day' : fmtLocalTime(ev.utcDate);
+      var utcStr    = (!ev.isAllDay && ev.utcDate) ? fmtUtcStr(ev.utcDate) : '';
+      var isPast    = !ev.isAllDay && ev.utcDate && ev.utcDate < now;
+      var uid       = 'u' + Math.random().toString(36).slice(2,9);
 
-      const { primary, secondary } = resolveInstruments(ev.currency, ev.title);
-      let pillsHtml = '';
-      primary.forEach(i   => { pillsHtml += `<span class="instr-pill primary">${i}</span>`; });
-      secondary.forEach(i => { pillsHtml += `<span class="instr-pill">${i}</span>`; });
+      var instr = resolveInstruments(ev.currency, ev.title);
+      var pillsHtml = '';
+      (instr.primary   ||[]).forEach(function(i){ pillsHtml += '<span class="instr-pill primary">'+i+'</span>'; });
+      (instr.secondary ||[]).forEach(function(i){ pillsHtml += '<span class="instr-pill">'+i+'</span>'; });
 
-      html += `
-      <div class="event-card impact-${ev.impact}${isPast?' past':''}">
-        <div class="event-top">
-          <div class="event-time-wrap">
-            <span class="event-time${ev.isAllDay?' allday':''}" onclick="toggleUtc('${uid}')">${localTime}</span>
-            ${utcStr ? `<span class="event-utc-toggle" onclick="toggleUtc('${uid}')">UTC ▾</span>
-            <span class="event-utc-full" id="${uid}">${utcStr}</span>` : ''}
-          </div>
-          <div class="event-right">
-            <div class="event-impact-dot"></div>
-            <span class="event-currency">${ev.currency}</span>
-          </div>
-        </div>
-        <div class="event-title">${ev.title}</div>
-        ${pillsHtml ? `<div class="event-instruments">${pillsHtml}</div>` : ''}
-      </div>`;
+      html += '<div class="event-card impact-' + ev.impact + (isPast?' past':'') + '">'
+        + '<div class="event-top"><div class="event-time-wrap">'
+        + '<span class="event-time' + (ev.isAllDay?' allday':'') + '" onclick="toggleUtc(\'' + uid + '\')">' + localTime + '</span>'
+        + (utcStr ? '<span class="event-utc-btn" onclick="toggleUtc(\''+uid+'\')">UTC ▾</span>'
+                  + '<span class="event-utc-detail" id="'+uid+'">'+utcStr+'</span>' : '')
+        + '</div>'
+        + '<div class="event-right"><span class="event-currency">'+ev.currency+'</span></div>'
+        + '</div>'
+        + '<div class="event-title">'+ev.title+'</div>'
+        + (pillsHtml ? '<div class="event-instruments">'+pillsHtml+'</div>' : '')
+        + '</div>';
     });
 
     html += '</div>';
@@ -524,30 +500,33 @@ function renderFromCache() {
 }
 
 function toggleUtc(id) {
-  const el = document.getElementById(id);
+  var el = document.getElementById(id);
   if (el) el.classList.toggle('show');
 }
 
-// ── Load ──
+// ─────────────────────────────────────────────
+// LOAD
+// ─────────────────────────────────────────────
 async function loadCalendar() {
-  const { monday, sunday } = getWeekBounds(weekOffset);
-  document.getElementById('week-label').textContent = fmtWeekLabel(monday, sunday);
+  var bounds = getWeekBounds(weekOffset);
+  document.getElementById('week-label').textContent = fmtWeekLabel(bounds.monday, bounds.sunday);
   document.getElementById('err-bar').classList.remove('show');
   document.getElementById('cal-body').innerHTML = '<div class="status-box"><div class="spinner"></div>Caricamento eventi…</div>';
 
   if (weekOffset < 0 || weekOffset > 1) {
-    document.getElementById('cal-body').innerHTML = '<div class="status-box">Il feed Forex Factory fornisce solo la settimana corrente e quella successiva.</div>';
+    document.getElementById('cal-body').innerHTML = '<div class="status-box">Il feed Forex Factory fornisce solo settimana corrente e prossima.</div>';
     return;
   }
 
-  const week = weekOffset === 1 ? 'next' : 'this';
+  var week = weekOffset === 1 ? 'next' : 'this';
   try {
-    const xml = await fetchFF(week);
+    var xml = await fetchFF(week);
     cachedEvents = parseXML(xml);
     renderFromCache();
   } catch(err) {
+    console.error('loadCalendar error', err);
     document.getElementById('cal-body').innerHTML = '';
-    document.getElementById('err-msg').textContent = err.message;
+    document.getElementById('err-msg').textContent = err.message || 'Errore sconosciuto';
     document.getElementById('err-bar').classList.add('show');
   }
 }
