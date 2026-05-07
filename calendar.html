@@ -12,17 +12,27 @@
 <style>
 :root[data-theme="dark"] {
   --bg:#0c0c0c; --surface:#161616; --surface2:#1e1e1e; --border:#2a2a2a;
-  --green:#4ade80; --green-bg:#0f1f0f; --red:#ef4444; --red-bg:#1c0808; --red-br:#5a1a1a;
-  --red-soft:#2a0a0a; --text:#e8e8e0; --muted:#777; --faint:#444;
-  --toggle-bg:#1e1e1e; --day-bg:#111; --pill-bg:#2a2a2a; --pill-text:#aaa;
+  --green:#4ade80; --green-bg:#0f1f0f;
+  --acc:#f59e0b; --acc-bg:#1a1200; --acc-br:#3a2800; --acc-soft:#181200;
+  --acc-faded:#7a5a1a; --acc-faded-bg:#1a1400; --acc-faded-br:#2e2200;
+  --red:#ef4444; --red-bg:#1c0808; --red-br:#5a1a1a; --red-soft:#1a0808;
+  --blue:#60a5fa; --blue-bg:#0a1220; --blue-br:#1e3a5a; --blue-soft:#0a1010;
+  --text:#e8e8e0; --muted:#777; --faint:#444;
+  --toggle-bg:#1e1e1e;
+  --past-bg:#111; --past-border:#1e1e1e; --past-text:#444;
+  --pill-bg:#2a2a2a; --pill-text:#888;
 }
 :root[data-theme="light"] {
   --bg:#f2f2f7; --surface:#ffffff; --surface2:#e8e8ed; --border:#d1d1d6;
-  --green:#16a34a; --green-bg:#f0fdf4; --acc:#d97706; --acc-bg:#fffbeb; --acc-br:#fde68a;
-  --acc-soft:#fffdf0; --text:#1c1c1e; --muted:#6b6b6b; --faint:#aeaeb2;
-  --toggle-bg:#e5e5ea; --day-bg:#f8f8fb; --pill-bg:#e8e8ed; --pill-text:#555;
-  --past-bg:#f5f5f7; --past-br:#e5e5ea; --past-text:#aeaeb2; --past-border:#e5e5ea;
+  --green:#16a34a; --green-bg:#f0fdf4;
+  --acc:#d97706; --acc-bg:#fffbeb; --acc-br:#fde68a; --acc-soft:#fffdf5;
   --acc-faded:#c4892a; --acc-faded-bg:#fef9ee; --acc-faded-br:#fde8aa;
+  --red:#dc2626; --red-bg:#fef2f2; --red-br:#fecaca; --red-soft:#fff5f5;
+  --blue:#2563eb; --blue-bg:#eff6ff; --blue-br:#bfdbfe; --blue-soft:#f0f7ff;
+  --text:#1c1c1e; --muted:#6b6b6b; --faint:#aeaeb2;
+  --toggle-bg:#e5e5ea;
+  --past-bg:#f5f5f7; --past-border:#e5e5ea; --past-text:#b0b0b8;
+  --pill-bg:#e8e8ed; --pill-text:#777;
 }
 
 * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
@@ -37,15 +47,14 @@ body {
 
 /* ── Header ── */
 .app-header {
-  padding:16px 20px 14px; border-bottom:1px solid var(--border);
+  padding:14px 20px 12px; border-bottom:1px solid var(--border);
   display:flex; align-items:center; justify-content:space-between;
   background:var(--bg); position:sticky; top:0; z-index:10;
   transition:background 0.2s,border-color 0.2s;
 }
-.header-text .title { font-size:18px; font-weight:700; letter-spacing:-0.4px; }
-.header-text .sub { font-size:12px; color:var(--muted); margin-top:1px; }
+.header-text .title { font-size:17px; font-weight:700; letter-spacing:-0.4px; }
+.header-text .sub { font-size:11px; color:var(--muted); margin-top:1px; }
 .header-actions { display:flex; align-items:center; gap:8px; }
-
 .theme-toggle {
   width:44px; height:26px; background:var(--toggle-bg); border:1px solid var(--border);
   border-radius:13px; cursor:pointer; position:relative; transition:background 0.2s;
@@ -62,153 +71,162 @@ body {
 .nav-tabs {
   display:flex; border-bottom:1px solid var(--border);
   background:var(--bg); position:sticky; top:57px; z-index:9;
-  transition:background 0.2s;
 }
 .nav-tab {
-  flex:1; padding:12px 0; font-size:13px; font-weight:600;
-  color:var(--muted); text-align:center; cursor:pointer;
-  border-bottom:2px solid transparent; transition:color 0.15s, border-color 0.15s;
-  text-decoration:none; letter-spacing:0.02em;
+  flex:1; padding:11px 0; font-size:13px; font-weight:600; color:var(--muted);
+  text-align:center; cursor:pointer; border-bottom:2px solid transparent;
+  transition:color 0.15s,border-color 0.15s; text-decoration:none;
 }
 .nav-tab.active { color:var(--green); border-bottom-color:var(--green); }
 
-/* ── Week nav ── */
-.week-nav {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:14px 20px; max-width:560px; width:100%; margin:0 auto;
+/* ── Controls bar ── */
+.controls-bar {
+  padding:12px 16px; display:flex; flex-direction:column; gap:10px;
+  border-bottom:1px solid var(--border); background:var(--bg);
+  position:sticky; top:98px; z-index:8;
+  transition:background 0.2s;
 }
-.week-label { font-size:14px; font-weight:600; color:var(--text); }
+.week-nav {
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+}
+.week-label { font-size:13px; font-weight:600; color:var(--text); text-align:center; flex:1; }
 .week-btn {
-  background:var(--surface2); border:none; color:var(--text); font-size:16px;
-  width:36px; height:36px; border-radius:10px; cursor:pointer;
+  background:var(--surface2); border:none; color:var(--text); font-size:17px;
+  width:34px; height:34px; border-radius:10px; cursor:pointer; flex-shrink:0;
   display:flex; align-items:center; justify-content:center;
   transition:background 0.12s; touch-action:manipulation;
 }
 .week-btn:active { background:var(--border); }
 
-/* ── Body ── */
+/* ── Impact filters ── */
+.filter-row {
+  display:flex; gap:8px; align-items:center;
+}
+.filter-label { font-size:11px; color:var(--faint); font-weight:600; letter-spacing:0.07em; text-transform:uppercase; flex-shrink:0; }
+.filter-pills { display:flex; gap:6px; flex-wrap:wrap; }
+.fpill {
+  padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600;
+  cursor:pointer; border:1.5px solid; transition:all 0.12s;
+  touch-action:manipulation; -webkit-user-select:none; user-select:none;
+}
+.fpill-high   { border-color:var(--red);  color:var(--red);  background:transparent; }
+.fpill-medium { border-color:var(--acc);  color:var(--acc);  background:transparent; }
+.fpill-low    { border-color:var(--blue); color:var(--blue); background:transparent; }
+.fpill-high.on   { background:var(--red-soft); }
+.fpill-medium.on { background:var(--acc-soft); }
+.fpill-low.on    { background:var(--blue-soft); }
+
+/* ── Scroll body ── */
 .scroll-body {
-  flex:1; padding:0 16px 40px; display:flex; flex-direction:column;
-  gap:0; max-width:560px; width:100%; margin:0 auto;
+  flex:1; padding:16px 16px 40px;
+  display:flex; flex-direction:column;
+  max-width:560px; width:100%; margin:0 auto;
 }
 
-/* ── Loading / empty ── */
-.status-box {
-  text-align:center; padding:48px 20px;
-  font-size:14px; color:var(--muted);
-}
+/* ── Status ── */
+.status-box { text-align:center; padding:48px 20px; font-size:14px; color:var(--muted); }
 .spinner {
-  width:28px; height:28px; border:2.5px solid var(--border);
+  width:26px; height:26px; border:2.5px solid var(--border);
   border-top-color:var(--green); border-radius:50%;
-  animation:spin 0.7s linear infinite; margin:0 auto 16px;
+  animation:spin 0.7s linear infinite; margin:0 auto 14px;
 }
 @keyframes spin { to { transform:rotate(360deg); } }
 
 /* ── Day group ── */
-.day-group { margin-bottom:4px; }
-.day-header {
-  padding:14px 0 8px; display:flex; align-items:center; gap:10px;
-}
-.day-name { font-size:13px; font-weight:700; color:var(--faint); letter-spacing:0.08em; text-transform:uppercase; }
-.day-date { font-size:13px; color:var(--muted); }
+.day-group { margin-bottom:8px; }
+.day-header { padding:14px 0 8px; display:flex; align-items:center; gap:8px; }
+.day-name  { font-size:12px; font-weight:700; color:var(--faint); letter-spacing:0.09em; text-transform:uppercase; }
+.day-date  { font-size:13px; color:var(--muted); }
 .day-today { font-size:10px; font-weight:700; background:var(--green); color:#000; padding:2px 8px; border-radius:20px; letter-spacing:0.06em; text-transform:uppercase; }
 [data-theme="light"] .day-today { color:#fff; }
 
 /* ── Event card ── */
 .event-card {
-  background:var(--acc-soft); border:1px solid var(--acc-br);
-  border-left:3px solid var(--acc); border-radius:12px;
-  padding:14px 16px; margin-bottom:8px;
-  transition:background 0.2s;
+  border-radius:12px; padding:13px 14px; margin-bottom:7px;
+  border:1px solid; border-left-width:3px;
+  transition:background 0.2s,opacity 0.2s;
 }
-.event-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:10px; }
-.event-time { font-size:15px; font-weight:700; color:var(--acc); letter-spacing:-0.3px; flex-shrink:0; }
-.event-time.allday { font-size:12px; font-weight:600; color:var(--muted); padding-top:2px; }
+.event-card.impact-High   { background:var(--red-soft);  border-color:var(--red-br);  border-left-color:var(--red); }
+.event-card.impact-Medium { background:var(--acc-soft);  border-color:var(--acc-br);  border-left-color:var(--acc); }
+.event-card.impact-Low    { background:var(--blue-soft); border-color:var(--blue-br); border-left-color:var(--blue); }
+.event-card.past { background:var(--past-bg) !important; border-color:var(--past-border) !important; opacity:0.45; }
+
+.event-top { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:8px; }
+.event-time-wrap { display:flex; flex-direction:column; gap:1px; }
+.event-time {
+  font-size:15px; font-weight:700; letter-spacing:-0.3px; cursor:pointer;
+}
+.impact-High   .event-time { color:var(--red); }
+.impact-Medium .event-time { color:var(--acc); }
+.impact-Low    .event-time { color:var(--blue); }
+.past .event-time { color:var(--past-text) !important; }
+
+.event-time.allday { font-size:11px; font-weight:600; color:var(--muted); padding-top:2px; }
+.event-utc-toggle { font-size:10px; color:var(--faint); cursor:pointer; -webkit-user-select:none; user-select:none; }
+.event-utc-full {
+  display:none; font-size:11px; color:var(--muted);
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:6px; padding:3px 8px; margin-top:3px;
+}
+.event-utc-full.show { display:block; }
+
+.event-right { display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0; }
+.event-impact-dot {
+  width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:4px;
+}
+.impact-High   .event-impact-dot { background:var(--red); }
+.impact-Medium .event-impact-dot { background:var(--acc); }
+.impact-Low    .event-impact-dot { background:var(--blue); }
 .event-currency {
-  font-size:11px; font-weight:700; letter-spacing:0.08em;
-  background:var(--acc-bg); color:var(--acc); border:1px solid var(--acc-br);
-  padding:3px 8px; border-radius:6px; flex-shrink:0;
+  font-size:11px; font-weight:700; letter-spacing:0.07em;
+  padding:2px 7px; border-radius:5px;
 }
+.impact-High   .event-currency { background:var(--red-bg);  color:var(--red);  border:1px solid var(--red-br); }
+.impact-Medium .event-currency { background:var(--acc-bg);  color:var(--acc);  border:1px solid var(--acc-br); }
+.impact-Low    .event-currency { background:var(--blue-bg); color:var(--blue); border:1px solid var(--blue-br); }
+.past .event-currency { background:transparent !important; color:var(--past-text) !important; border-color:var(--past-border) !important; }
+
 .event-title { font-size:14px; font-weight:600; color:var(--text); line-height:1.35; }
-.event-instruments { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.past .event-title { color:var(--past-text); }
+
+.event-instruments { display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; }
 .instr-pill {
   font-size:11px; font-weight:600; letter-spacing:0.04em;
-  background:var(--acc-bg); color:var(--acc);
-  border:1px solid transparent;
-  padding:3px 10px; border-radius:20px;
-  opacity:0.45;
+  background:var(--acc-faded-bg); color:var(--acc-faded);
+  border:1px solid var(--acc-faded-br); padding:2px 9px; border-radius:20px;
 }
 .instr-pill.primary {
-  background:var(--acc-bg); color:var(--acc);
-  border:1px solid var(--acc-br);
-  opacity:1;
+  background:var(--acc-bg); color:var(--acc); border-color:var(--acc-br);
+}
+.past .instr-pill, .past .instr-pill.primary {
+  background:transparent; color:var(--past-text); border-color:var(--past-border);
 }
 
-
-.event-card.past {
-  background:var(--past-bg); border-color:var(--past-border);
-  border-left-color:var(--past-border); opacity:0.5;
-}
-.event-card.past .event-time { color:var(--past-text); }
-.event-card.past .event-title { color:var(--past-text); }
-.event-card.past .event-currency { background:transparent; color:var(--past-text); border-color:var(--past-border); }
-.event-card.past .instr-pill,
-.event-card.past .instr-pill.primary { background:transparent; border-color:var(--past-border); color:var(--past-text); opacity:0.4; }
-
-.event-time-wrap { display:inline-flex; flex-direction:column; gap:2px; }
-.event-utc {
-  font-size:10px; color:var(--faint); letter-spacing:0.02em;
-  cursor:pointer; -webkit-user-select:none; user-select:none;
-}
-/* Mobile tap-to-reveal UTC */
-.event-utc-full {
-  display:none; font-size:11px; background:var(--surface2);
-  color:var(--muted); padding:4px 10px; border-radius:6px;
-  margin-top:4px; border:1px solid var(--border);
-}
-.event-utc-full.visible { display:block; }
-
-.no-events {
-  padding:20px 0 12px; font-size:13px; color:var(--faint); text-align:center;
-}
-
-/* ── Error ── */
+/* ── Error / refresh ── */
 .error-bar {
-  background:var(--acc-bg); border:1px solid var(--acc-br); border-radius:12px;
-  padding:16px; margin:16px 0; font-size:14px; color:var(--acc);
+  background:var(--red-bg); border:1px solid var(--red-br); border-radius:10px;
+  padding:14px 16px; margin-bottom:12px; font-size:14px; color:var(--red);
   display:none; align-items:flex-start; gap:10px;
 }
 .error-bar.show { display:flex; }
-
-/* ── Refresh btn ── */
-.refresh-row {
-  display:flex; justify-content:center; padding:16px 0 8px;
-}
+.refresh-row { display:flex; justify-content:center; padding:12px 0; }
 .refresh-btn {
   background:var(--surface2); border:none; color:var(--muted); font-family:inherit;
   font-size:13px; padding:8px 20px; border-radius:20px; cursor:pointer;
-  display:flex; align-items:center; gap:6px; transition:background 0.12s;
+  display:flex; align-items:center; gap:6px; touch-action:manipulation;
 }
 .refresh-btn:active { background:var(--border); }
-.refresh-icon { font-size:14px; }
-
-/* ── Legend ── */
-.legend {
-  display:flex; align-items:center; gap:8px; padding:0 0 16px;
-  font-size:12px; color:var(--muted);
-}
-.legend-dot { width:10px; height:10px; border-radius:50%; background:var(--acc); flex-shrink:0; }
 </style>
 </head>
 <body>
 
 <div class="app-header">
   <div class="header-text">
-    <div class="title">Calendario News</div>
-    <div class="sub">solo eventi ad alto impatto</div>
+    <div class="title">Calendario Macro</div>
+    <div class="sub" id="tz-sub">rilevamento fuso orario…</div>
   </div>
   <div class="header-actions">
-    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Cambia tema">
+    <button class="theme-toggle" onclick="toggleTheme()">
       <div class="theme-toggle-knob"><span id="theme-icon">☀️</span></div>
     </button>
   </div>
@@ -219,41 +237,42 @@ body {
   <a class="nav-tab active" href="calendar.html">Calendario</a>
 </div>
 
-<div class="week-nav">
-  <button class="week-btn" onclick="changeWeek(-1)">‹</button>
-  <span class="week-label" id="week-label">—</span>
-  <button class="week-btn" onclick="changeWeek(1)">›</button>
+<div class="controls-bar">
+  <div class="week-nav">
+    <button class="week-btn" onclick="changeWeek(-1)">‹</button>
+    <span class="week-label" id="week-label">—</span>
+    <button class="week-btn" onclick="changeWeek(1)">›</button>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Impatto</span>
+    <div class="filter-pills">
+      <div class="fpill fpill-high on"   data-impact="High"   onclick="toggleFilter(this)">🔴 Alto</div>
+      <div class="fpill fpill-medium on" data-impact="Medium" onclick="toggleFilter(this)">🟡 Medio</div>
+      <div class="fpill fpill-low on"    data-impact="Low"    onclick="toggleFilter(this)">🔵 Basso</div>
+    </div>
+  </div>
 </div>
 
 <div class="scroll-body">
-  <div class="legend">
-    <div class="legend-dot"></div>
-    <span>Solo news rosse (alto impatto) · orario Roma</span>
-  </div>
-
   <div class="error-bar" id="err-bar">
     <span style="font-size:18px;flex-shrink:0;">⚠</span>
-    <div>
-      <div style="font-weight:600;margin-bottom:4px;">Impossibile caricare i dati</div>
-      <div id="err-msg" style="font-size:13px;opacity:0.8;"></div>
-    </div>
+    <div><div style="font-weight:600;margin-bottom:3px;">Errore caricamento</div><div id="err-msg" style="font-size:13px;opacity:0.8;"></div></div>
   </div>
 
   <div id="cal-body">
-    <div class="status-box">
-      <div class="spinner"></div>
-      Caricamento eventi in corso…
-    </div>
+    <div class="status-box"><div class="spinner"></div>Caricamento eventi…</div>
   </div>
 
   <div class="refresh-row">
-    <button class="refresh-btn" onclick="loadCalendar()">
-      <span class="refresh-icon">↺</span> Aggiorna
-    </button>
+    <button class="refresh-btn" onclick="loadCalendar()">↺ Aggiorna</button>
   </div>
 </div>
 
 <script>
+// ── Detect browser timezone ──
+const USER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+document.getElementById('tz-sub').textContent = 'Orario locale: ' + USER_TZ.replace('_',' ');
+
 // ── Theme ──
 let _t = 'dark';
 try { _t = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme:light)').matches ? 'light' : 'dark'); } catch(e) {}
@@ -267,101 +286,34 @@ function setTheme(t) {
 }
 function toggleTheme() { setTheme(document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark'); }
 
-// ── Keyword rules: title patterns → specific instruments ──
-const KEYWORD_RULES = [
-  // German-specific → GER40 primary
-  { p:/german|germany|ifo|zew|buba|bundesbank|destatis/i,
-    primary:['GER40'], secondary:['EURUSD','EURGBP'] },
-  // ECB / Euro area generic
-  { p:/ecb|european central bank|euro.?zone|euro.?area|lagarde/i,
-    primary:['EURUSD','EURGBP','GER40'], secondary:[] },
-  // French-specific
-  { p:/french|france/i,
-    primary:['EURUSD','EURGBP'], secondary:['GER40'] },
-  // Italian-specific
-  { p:/italian|italy/i,
-    primary:['EURUSD'], secondary:['GER40','EURGBP'] },
-  // Oil inventories (Crude Oil Inventories, EIA Weekly)
-  { p:/crude oil inv|eia crude|oil inv|petroleum inv|cushing/i,
-    primary:['USOIL'], secondary:['US500','US100'] },
-  // Oil generic
-  { p:/crude|opec|petroleum|eia|oil price/i,
-    primary:['USOIL'], secondary:['US500'] },
-  // Unemployment / jobless claims → USD + US indices
-  { p:/unemployment|jobless|initial claims|continuing claims/i,
-    primary:['US500','US100'], secondary:['EURUSD','XAUUSD','USOIL','BTCUSD','AUDJPY'] },
-  // NFP / major US macro
-  { p:/nonfarm|non-farm|nfp/i,
-    primary:['US500','US100','EURUSD','XAUUSD'], secondary:['USOIL','BTCUSD','AUDJPY'] },
-  // Fed / FOMC
-  { p:/fed |fomc|powell|federal reserve|interest rate decision/i,
-    primary:['US500','US100','XAUUSD','EURUSD'], secondary:['USOIL','BTCUSD','AUDJPY','EURGBP'] },
-  // US CPI / PPI / inflation
-  { p:/cpi|ppi|inflation|core.*price|price.*index/i,
-    primary:['US500','US100','XAUUSD'], secondary:['EURUSD','USOIL','BTCUSD'] },
-  // US GDP / retail / ISM / PMI (generic US)
-  { p:/gdp|retail sales|ism|flash.*pmi|services pmi|manufacturing pmi/i,
-    primary:['US500','US100'], secondary:['EURUSD','XAUUSD','USOIL','BTCUSD'] },
-  // Gold / metals
-  { p:/gold|silver|metal/i,
-    primary:['XAUUSD'], secondary:[] },
-  // BTC / crypto
-  { p:/bitcoin|crypto|btc/i,
-    primary:['BTCUSD'], secondary:[] },
-  // BOE / UK
-  { p:/boe|bank of england|bailey|united kingdom|british/i,
-    primary:['EURGBP'], secondary:['EURUSD'] },
-  // RBA / Australia
-  { p:/rba|reserve bank of australia|australian/i,
-    primary:['AUDJPY'], secondary:[] },
-  // BOJ / Japan
-  { p:/boj|bank of japan|ueda|japanese/i,
-    primary:['AUDJPY'], secondary:[] },
-];
-
-// ── Fallback currency → instruments (when no keyword rule matches) ──
-const CUR_TO_INSTR = {
-  USD: ['EURUSD','XAUUSD','BTCUSD','USOIL','US500','US100','AUDJPY','GER40'],
-  EUR: ['EURUSD','EURGBP','GER40'],
-  GBP: ['EURGBP'],
-  AUD: ['AUDJPY'],
-  JPY: ['AUDJPY'],
-  OIL: ['USOIL'],
-  ALL: []
-};
-const CUR_PRIMARY = {
-  USD: ['EURUSD','XAUUSD','USOIL','US500','US100'],
-  EUR: ['EURUSD','EURGBP','GER40'],
-  GBP: ['EURGBP'],
-  AUD: ['AUDJPY'],
-  JPY: ['AUDJPY'],
-};
-
-// ── Resolve instruments for an event ──
-function resolveInstruments(currency, title) {
-  for (const rule of KEYWORD_RULES) {
-    if (rule.p.test(title)) {
-      return { instrs: [...rule.primary, ...rule.secondary], primaries: rule.primary };
-    }
+// ── Filter state ──
+const activeFilters = new Set(['High','Medium','Low']);
+function toggleFilter(el) {
+  const impact = el.dataset.impact;
+  if (activeFilters.has(impact)) {
+    // Don't allow deselecting all
+    if (activeFilters.size === 1) return;
+    activeFilters.delete(impact);
+    el.classList.remove('on');
+  } else {
+    activeFilters.add(impact);
+    el.classList.add('on');
   }
-  // fallback to currency
-  return {
-    instrs: CUR_TO_INSTR[currency] || [],
-    primaries: CUR_PRIMARY[currency] || []
-  };
+  renderFromCache();
 }
 
-// ── Week offset state ──
+// ── Week state ──
 let weekOffset = 0;
+let cachedEvents = [];
 
 function changeWeek(dir) {
   weekOffset += dir;
   loadCalendar();
 }
 
-function getWeekDates(offset) {
+function getWeekBounds(offset) {
   const now = new Date();
-  const day = now.getDay(); // 0=sun
+  const day = now.getDay();
   const monday = new Date(now);
   monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1) + offset * 7);
   monday.setHours(0,0,0,0);
@@ -372,183 +324,193 @@ function getWeekDates(offset) {
 }
 
 function fmtWeekLabel(monday, sunday) {
-  const opts = { day:'numeric', month:'short' };
-  const loc = 'it-IT';
-  return monday.toLocaleDateString(loc, opts) + ' – ' + sunday.toLocaleDateString(loc, { ...opts, year:'numeric' });
+  const o = { day:'numeric', month:'short' };
+  const l = navigator.language || 'it-IT';
+  return monday.toLocaleDateString(l,o) + ' – ' + sunday.toLocaleDateString(l,{...o,year:'numeric'});
 }
 
-// ── Fetch via Vercel proxy ──
-async function fetchFF(url) {
-  const week = url.includes('nextweek') ? 'next' : 'this';
-  const proxy = 'https://lotcal-api.vercel.app/api/calendar?week=' + week;
-  const res = await fetch(proxy, { cache: 'no-store' });
+// ── ET → UTC conversion (handles DST correctly) ──
+function etToUtc(yr, mo, da, h, min) {
+  // FF publishes times in US Eastern Time (America/New_York)
+  // Try UTC-4 (EDT) and UTC-5 (EST), verify with Intl which one is correct
+  for (const off of [4, 5]) {
+    const candidate = new Date(Date.UTC(yr, mo-1, da, h + off, min));
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York',
+      hour: 'numeric', minute: 'numeric', hour12: false
+    }).formatToParts(candidate);
+    const ch = parseInt(parts.find(p => p.type==='hour').value) % 24;
+    const cm = parseInt(parts.find(p => p.type==='minute').value);
+    if (ch === h && cm === min) return candidate;
+  }
+  return new Date(Date.UTC(yr, mo-1, da, h + 5, min)); // fallback EST
+}
+
+// ── Parse FF time string → UTC Date ──
+function parseFFTime(dateStr, timeStr) {
+  if (!timeStr || ['All Day','Tentative',''].includes(timeStr)) {
+    return { utcDate: null, isAllDay: true };
+  }
+  const [mo, da, yr] = dateStr.split('-').map(Number);
+  const m = timeStr.match(/^(\d+):(\d+)(am|pm)$/i);
+  if (!m) return { utcDate: null, isAllDay: false };
+  let h = parseInt(m[1]);
+  const min = parseInt(m[2]);
+  const ap = m[3].toLowerCase();
+  if (ap === 'pm' && h !== 12) h += 12;
+  if (ap === 'am' && h === 12) h = 0;
+  return { utcDate: etToUtc(yr, mo, da, h, min), isAllDay: false };
+}
+
+// ── Format UTC date in user's local timezone ──
+function fmtLocalTime(utcDate) {
+  if (!utcDate) return '';
+  return utcDate.toLocaleTimeString(navigator.language || 'it-IT', {
+    timeZone: USER_TZ,
+    hour: '2-digit', minute: '2-digit', hour12: false
+  });
+}
+function fmtUtcString(utcDate) {
+  if (!utcDate) return '';
+  return utcDate.toUTCString().replace(/:\d\d GMT/, ' UTC');
+}
+
+// ── Fetch from Vercel proxy ──
+async function fetchFF(week) {
+  const url = 'https://lotcal-api.vercel.app/api/calendar?week=' + week;
+  const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) throw new Error('HTTP ' + res.status);
   return res.text();
 }
 
-// ── Parse XML ──
-function parseEvents(xmlText) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(xmlText, 'text/xml');
-  const items = Array.from(doc.querySelectorAll('event'));
-
-  return items
-    .filter(e => {
-      const impact = e.querySelector('impact')?.textContent?.trim();
-      return impact === 'High';
-    })
-    .map(e => ({
-      date:     e.querySelector('date')?.textContent?.trim() || '',
-      time:     e.querySelector('time')?.textContent?.trim() || '',
-      currency: e.querySelector('currency')?.textContent?.trim() || '',
-      title:    e.querySelector('title')?.textContent?.trim() || '',
-      impact:   'High'
-    }));
+// ── Parse XML → events array ──
+function parseXML(xml) {
+  const doc = new DOMParser().parseFromString(xml, 'text/xml');
+  return Array.from(doc.querySelectorAll('event')).map(e => ({
+    date:     e.querySelector('date')?.textContent?.trim() || '',
+    time:     e.querySelector('time')?.textContent?.trim() || '',
+    currency: e.querySelector('currency')?.textContent?.trim() || '',
+    title:    e.querySelector('title')?.textContent?.trim() || '',
+    impact:   e.querySelector('impact')?.textContent?.trim() || '',
+  })).filter(e => e.date && ['High','Medium','Low'].includes(e.impact));
 }
 
-// ── Convert FF time (ET) to UTC, then display in browser local timezone ──
-// Strategy: use Intl to find the exact ET offset for this specific date
-// (handles DST changes in both US and user's country automatically)
-function etToUtc(yr, mo, da, h, min) {
-  // Binary search: find UTC time X such that X in America/New_York == h:min on MM/DD/YYYY
-  // We use a simpler approach: create a candidate UTC date, check what ET shows, adjust
-  // ET is UTC-5 (EST) or UTC-4 (EDT). Try both, pick the one that matches.
-  for (const offsetH of [4, 5]) {
-    const candidate = new Date(Date.UTC(yr, mo-1, da, h + offsetH, min));
-    const etCheck = new Intl.DateTimeFormat('en-US', {
-      timeZone: 'America/New_York',
-      hour: 'numeric', minute: 'numeric', hour12: false
-    }).formatToParts(candidate);
-    const checkH = parseInt(etCheck.find(p => p.type === 'hour').value) % 24;
-    const checkM = parseInt(etCheck.find(p => p.type === 'minute').value);
-    if (checkH === h && checkM === min) return candidate;
+// ── Instrument mapping ──
+const KEYWORD_RULES = [
+  { p:/german|germany|ifo|zew|buba|bundesbank|destatis/i,       primary:['GER40'],               secondary:['EURUSD','EURGBP'] },
+  { p:/ecb|european central bank|euro.?zone|euro.?area|lagarde/i,primary:['EURUSD','EURGBP','GER40'], secondary:[] },
+  { p:/french|france/i,                                          primary:['EURUSD','EURGBP'],     secondary:['GER40'] },
+  { p:/italian|italy/i,                                          primary:['EURUSD'],              secondary:['GER40','EURGBP'] },
+  { p:/crude oil inv|eia crude|oil inv|petroleum inv|cushing/i,  primary:['USOIL'],               secondary:['US500','US100'] },
+  { p:/crude|opec|petroleum|eia|oil price/i,                     primary:['USOIL'],               secondary:['US500'] },
+  { p:/unemployment|jobless|initial claims|continuing claims/i,  primary:['US500','US100'],       secondary:['EURUSD','XAUUSD','USOIL','BTCUSD','AUDJPY'] },
+  { p:/nonfarm|non-farm|nfp/i,                                   primary:['US500','US100','EURUSD','XAUUSD'], secondary:['USOIL','BTCUSD','AUDJPY'] },
+  { p:/fed |fomc|powell|federal reserve|interest rate decision/i,primary:['US500','US100','XAUUSD','EURUSD'], secondary:['USOIL','BTCUSD','AUDJPY','EURGBP'] },
+  { p:/cpi|ppi|inflation|core.*price|price.*index/i,             primary:['US500','US100','XAUUSD'], secondary:['EURUSD','USOIL','BTCUSD'] },
+  { p:/gdp|retail sales|ism|flash.*pmi|services pmi|manufacturing pmi/i, primary:['US500','US100'], secondary:['EURUSD','XAUUSD','USOIL','BTCUSD'] },
+  { p:/gold|silver|metal/i,                                      primary:['XAUUSD'],              secondary:[] },
+  { p:/bitcoin|crypto|btc/i,                                     primary:['BTCUSD'],              secondary:[] },
+  { p:/boe|bank of england|bailey|united kingdom|british/i,      primary:['EURGBP'],              secondary:['EURUSD'] },
+  { p:/rba|reserve bank of australia|australian/i,               primary:['AUDJPY'],              secondary:[] },
+  { p:/boj|bank of japan|ueda|japanese/i,                        primary:['AUDJPY'],              secondary:[] },
+];
+const CUR_FALLBACK = {
+  USD: { primary:['EURUSD','XAUUSD','USOIL','US500','US100'], secondary:['BTCUSD','AUDJPY'] },
+  EUR: { primary:['EURUSD','EURGBP','GER40'],                 secondary:[] },
+  GBP: { primary:['EURGBP'],                                  secondary:['EURUSD'] },
+  AUD: { primary:['AUDJPY'],                                  secondary:[] },
+  JPY: { primary:['AUDJPY'],                                  secondary:[] },
+};
+function resolveInstruments(currency, title) {
+  for (const rule of KEYWORD_RULES) {
+    if (rule.p.test(title)) return { primary: rule.primary, secondary: rule.secondary };
   }
-  // Fallback: assume EST (UTC-5)
-  return new Date(Date.UTC(yr, mo-1, da, h + 5, min));
-}
-
-function toLocalTime(dateStr, timeStr) {
-  if (!timeStr || timeStr === 'All Day' || timeStr === 'Tentative' || timeStr === '') {
-    return { display: 'All Day', utcDisplay: '', isAllDay: true, dateObj: null };
-  }
-
-  const [mo, da, yr] = dateStr.split('-').map(Number);
-  const match = timeStr.match(/^(\d+):(\d+)(am|pm)$/i);
-  if (!match) return { display: timeStr, utcDisplay: '', isAllDay: false, dateObj: null };
-
-  let h = parseInt(match[1]);
-  const min = parseInt(match[2]);
-  const ap = match[3].toLowerCase();
-  if (ap === 'pm' && h !== 12) h += 12;
-  if (ap === 'am' && h === 12) h = 0;
-
-  const utcDate = etToUtc(yr, mo, da, h, min);
-
-  // Local time: use browser timezone automatically
-  const display = utcDate.toLocaleTimeString(navigator.language, {
-    hour: '2-digit', minute: '2-digit', hour12: false
-  });
-
-  // UTC tooltip string
-  const utcDisplay = utcDate.toUTCString().replace(/:\d\d GMT/, ' UTC');
-
-  return { display, utcDisplay, isAllDay: false, dateObj: utcDate };
-}
-
-// ── Group by date ──
-function groupByDate(events) {
-  const map = {};
-  events.forEach(ev => {
-    if (!map[ev.date]) map[ev.date] = [];
-    map[ev.date].push(ev);
-  });
-  return map;
+  const fb = CUR_FALLBACK[currency];
+  if (fb) return fb;
+  return { primary: [], secondary: [] };
 }
 
 // ── Render ──
-function renderCalendar(events, monday, sunday) {
+function renderFromCache() {
+  const { monday, sunday } = getWeekBounds(weekOffset);
   const body = document.getElementById('cal-body');
-  if (!events.length) {
-    body.innerHTML = '<div class="status-box">Nessuna news ad alto impatto questa settimana.</div>';
-    return;
-  }
 
-  // filter to current week
-  const weekEvents = events.filter(ev => {
+  const filtered = cachedEvents.filter(ev => {
+    if (!activeFilters.has(ev.impact)) return false;
     if (!ev.date) return false;
     const [m,d,y] = ev.date.split('-').map(Number);
     const dt = new Date(y, m-1, d);
     return dt >= monday && dt <= sunday;
   });
 
-  if (!weekEvents.length) {
-    body.innerHTML = '<div class="status-box">Nessuna news ad alto impatto questa settimana.</div>';
+  if (!filtered.length) {
+    body.innerHTML = '<div class="status-box">Nessun evento per questa settimana con i filtri selezionati.</div>';
     return;
   }
 
-  const grouped = groupByDate(weekEvents);
-  const today = new Date();
-  today.setHours(0,0,0,0);
+  // Group by local date (in user timezone)
+  const groups = {};
+  filtered.forEach(ev => {
+    const { utcDate, isAllDay } = parseFFTime(ev.date, ev.time);
+    // Key: use FF date string as stable key (already in ET date, close enough for grouping)
+    const key = ev.date;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push({ ...ev, utcDate, isAllDay });
+  });
 
-  const days = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
-  const months = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  const DAY_NAMES = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+  const MONTHS    = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  const now = new Date();
 
-  let html = '';
-
-  // Sort dates
-  const sortedDates = Object.keys(grouped).sort((a,b) => {
+  const sortedKeys = Object.keys(groups).sort((a,b) => {
     const [m1,d1,y1] = a.split('-').map(Number);
     const [m2,d2,y2] = b.split('-').map(Number);
     return new Date(y1,m1-1,d1) - new Date(y2,m2-1,d2);
   });
 
-  sortedDates.forEach(dateStr => {
-    const [m,d,y] = dateStr.split('-').map(Number);
-    const dt = new Date(y, m-1, d);
-    const isToday = dt.getTime() === today.getTime();
-    const dayName = days[dt.getDay()];
-    const dateLabel = d + ' ' + months[m-1];
+  let html = '';
+  sortedKeys.forEach(key => {
+    const [mo,da,yr] = key.split('-').map(Number);
+    const dt = new Date(yr, mo-1, da);
+    const isToday = dt.toDateString() === now.toDateString();
 
     html += `<div class="day-group">
       <div class="day-header">
-        <span class="day-name">${dayName}</span>
-        <span class="day-date">${dateLabel} ${y}</span>
+        <span class="day-name">${DAY_NAMES[dt.getDay()]}</span>
+        <span class="day-date">${da} ${MONTHS[mo-1]} ${yr}</span>
         ${isToday ? '<span class="day-today">Oggi</span>' : ''}
       </div>`;
 
-    // Sort by time
-    const dayEvents = grouped[dateStr].sort((a,b) => {
-      const ta = toLocalTime(a.date, a.time);
-      const tb = toLocalTime(b.date, b.time);
-      if (ta.isAllDay) return -1;
-      if (tb.isAllDay) return 1;
-      if (!ta.dateObj || !tb.dateObj) return 0;
-      return ta.dateObj - tb.dateObj;
+    // Sort events by time
+    const evs = groups[key].sort((a,b) => {
+      if (!a.utcDate) return -1;
+      if (!b.utcDate) return 1;
+      return a.utcDate - b.utcDate;
     });
 
-    dayEvents.forEach(ev => {
-      const { display, utcDisplay, isAllDay, dateObj } = toLocalTime(ev.date, ev.time);
-      const { instrs, primaries } = resolveInstruments(ev.currency, ev.title);
+    evs.forEach(ev => {
+      const localTime = ev.isAllDay ? 'All Day' : fmtLocalTime(ev.utcDate);
+      const utcStr    = ev.isAllDay ? '' : fmtUtcString(ev.utcDate);
+      const isPast    = !ev.isAllDay && ev.utcDate && ev.utcDate < now;
+      const uid       = 'u' + Math.random().toString(36).slice(2,8);
 
+      const { primary, secondary } = resolveInstruments(ev.currency, ev.title);
       let pillsHtml = '';
-      if (instrs.length) {
-        instrs.forEach(ins => {
-          const isPrimary = primaries.includes(ins);
-          pillsHtml += `<span class="instr-pill${isPrimary?' primary':''}">${ins}</span>`;
-        });
-      }
+      primary.forEach(i   => { pillsHtml += `<span class="instr-pill primary">${i}</span>`; });
+      secondary.forEach(i => { pillsHtml += `<span class="instr-pill">${i}</span>`; });
 
-      const now = new Date();
-      const isPast = !isAllDay && dateObj && dateObj < now;
-      const cardId = 'ev-' + Math.random().toString(36).slice(2,8);
-      html += `<div class="event-card${isPast?' past':''}">
+      html += `
+      <div class="event-card impact-${ev.impact}${isPast?' past':''}">
         <div class="event-top">
           <div class="event-time-wrap">
-            <span class="event-time${isAllDay?' allday':''}" onclick="toggleUtc('${cardId}')">${display}</span>
-            ${utcDisplay ? `<span class="event-utc" onclick="toggleUtc('${cardId}')">UTC ↓</span>` : ''}
-            ${utcDisplay ? `<span class="event-utc-full" id="${cardId}">${utcDisplay}</span>` : ''}
+            <span class="event-time${ev.isAllDay?' allday':''}" onclick="toggleUtc('${uid}')">${localTime}</span>
+            ${utcStr ? `<span class="event-utc-toggle" onclick="toggleUtc('${uid}')">UTC ▾</span>
+            <span class="event-utc-full" id="${uid}">${utcStr}</span>` : ''}
           </div>
-          <span class="event-currency">${ev.currency}</span>
+          <div class="event-right">
+            <div class="event-impact-dot"></div>
+            <span class="event-currency">${ev.currency}</span>
+          </div>
         </div>
         <div class="event-title">${ev.title}</div>
         ${pillsHtml ? `<div class="event-instruments">${pillsHtml}</div>` : ''}
@@ -561,47 +523,35 @@ function renderCalendar(events, monday, sunday) {
   body.innerHTML = html;
 }
 
-// ── Toggle UTC tooltip (mobile-friendly tap) ──
 function toggleUtc(id) {
   const el = document.getElementById(id);
-  if (!el) return;
-  el.classList.toggle('visible');
+  if (el) el.classList.toggle('show');
 }
 
-// ── Main load ──
+// ── Load ──
 async function loadCalendar() {
-  const body = document.getElementById('cal-body');
-  const errBar = document.getElementById('err-bar');
-  errBar.classList.remove('show');
-
-  body.innerHTML = '<div class="status-box"><div class="spinner"></div>Caricamento eventi…</div>';
-
-  const { monday, sunday } = getWeekDates(weekOffset);
+  const { monday, sunday } = getWeekBounds(weekOffset);
   document.getElementById('week-label').textContent = fmtWeekLabel(monday, sunday);
+  document.getElementById('err-bar').classList.remove('show');
+  document.getElementById('cal-body').innerHTML = '<div class="status-box"><div class="spinner"></div>Caricamento eventi…</div>';
 
-  // Forex Factory provides thisweek and nextweek feeds
-  // For offsets we try both and filter
-  let url;
-  if (weekOffset === 0) url = 'https://nfs.faireconomy.media/ff_calendar_thisweek.xml';
-  else if (weekOffset === 1) url = 'https://nfs.faireconomy.media/ff_calendar_nextweek.xml';
-  else {
-    // For past/future weeks beyond next, show message
-    body.innerHTML = '<div class="status-box">Il feed di Forex Factory fornisce solo la settimana corrente e quella successiva.</div>';
+  if (weekOffset < 0 || weekOffset > 1) {
+    document.getElementById('cal-body').innerHTML = '<div class="status-box">Il feed Forex Factory fornisce solo la settimana corrente e quella successiva.</div>';
     return;
   }
 
+  const week = weekOffset === 1 ? 'next' : 'this';
   try {
-    const xml = await fetchFF(url);
-    const events = parseEvents(xml);
-    renderCalendar(events, monday, sunday);
+    const xml = await fetchFF(week);
+    cachedEvents = parseXML(xml);
+    renderFromCache();
   } catch(err) {
-    body.innerHTML = '';
-    document.getElementById('err-msg').textContent = 'Errore: ' + err.message + '. Riprova tra qualche secondo.';
-    errBar.classList.add('show');
+    document.getElementById('cal-body').innerHTML = '';
+    document.getElementById('err-msg').textContent = err.message;
+    document.getElementById('err-bar').classList.add('show');
   }
 }
 
-// ── Init ──
 loadCalendar();
 </script>
 </body>

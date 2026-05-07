@@ -252,12 +252,12 @@ body {
     <div class="input-card">
       <div class="irow">
         <label class="irow-label" for="capital">Capitale</label>
-        <input id="capital" type="text" inputmode="decimal" placeholder="10000" autocomplete="off" autocorrect="off" spellcheck="false">
+        <input id="capital" type="text" inputmode="decimal" placeholder="10000" autocomplete="off" autocorrect="off" spellcheck="false" oninput="this.value=this.value.replace(',','.')">
         <span class="irow-unit">USD</span>
       </div>
       <div class="irow">
         <label class="irow-label" for="risk">Rischio</label>
-        <input id="risk" type="text" inputmode="decimal" placeholder="1.00" autocomplete="off" autocorrect="off" spellcheck="false">
+        <input id="risk" type="text" inputmode="decimal" placeholder="1.00" autocomplete="off" autocorrect="off" spellcheck="false" oninput="this.value=this.value.replace(',','.')">
         <span class="irow-unit">%</span>
       </div>
     </div>
@@ -268,11 +268,11 @@ body {
     <div class="price-pair">
       <div class="price-card">
         <div class="price-card-label">Entry</div>
-        <input id="entry" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off" autocorrect="off" spellcheck="false">
+        <input id="entry" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off" autocorrect="off" spellcheck="false" oninput="this.value=this.value.replace(',','.')">
       </div>
       <div class="price-card">
         <div class="price-card-label sl">SL / Exit</div>
-        <input id="exitp" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off" autocorrect="off" spellcheck="false">
+        <input id="exitp" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off" autocorrect="off" spellcheck="false" oninput="this.value=this.value.replace(',','.')">
       </div>
     </div>
   </div>
@@ -323,39 +323,7 @@ body {
 </div>
 
 <script>
-// ── Locale-aware number handling ──
-// Detect decimal and thousands separators from browser locale
-const _n = (1234567.89).toLocaleString(navigator.language || 'en');
-const localDecimal   = _n.replace(/[0-9]/g, '').slice(-1) || '.';
-const localThousands = _n.replace(/[0-9]/g, '')[0] || '';
 
-// Parse a locale-formatted number string to a JS float
-function parseLocaleNumber(str) {
-  if (!str) return NaN;
-  let s = str.trim();
-  // Remove thousands separators, replace decimal separator with dot
-  if (localThousands) s = s.split(localThousands).join('');
-  if (localDecimal !== '.') s = s.replace(localDecimal, '.');
-  return parseFloat(s);
-}
-
-// Sanitize input: keep only digits + local decimal separator (one max)
-['capital','risk','entry','exitp'].forEach(id => {
-  const el = document.getElementById(id);
-  el.addEventListener('input', function() {
-    const pos = this.selectionStart;
-    const d = localDecimal.replace('.', '\.'); // escape for regex
-    // Remove anything that's not a digit or the local decimal
-    const cleaned = this.value.replace(new RegExp('[^0-9' + d + ']', 'g'), '');
-    // Allow only one decimal separator
-    const parts = cleaned.split(localDecimal);
-    const normalized = parts[0] + (parts.length > 1 ? localDecimal + parts.slice(1).join('') : '');
-    if (normalized !== this.value) {
-      this.value = normalized;
-      try { this.setSelectionRange(pos, pos); } catch(e) {}
-    }
-  });
-});
 
 // ── Theme ──
 let _t = 'dark';
@@ -397,7 +365,8 @@ const CFG = {
 };
 
 function getVal(id) {
-  return parseLocaleNumber(document.getElementById(id).value);
+  // comma already replaced by oninput handler
+  return parseFloat(document.getElementById(id).value);
 }
 function getRisk(key, lots, pipDist, pDiff) {
   const c = CFG[key];
