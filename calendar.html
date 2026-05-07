@@ -246,78 +246,116 @@ function fmtWeekLabel(monday, sunday) {
 }
 
 // ─────────────────────────────────────────────
-// TIMEZONE CONVERSION: ET → UTC → local browser
-// FF publishes times in US Eastern Time.
-// Strategy: try UTC-4 (EDT) and UTC-5 (EST), 
-// verify each with Intl to find the correct one.
+// TIMEZONE CONVERSION
+// FF times are in US Eastern Time (America/New_York).
+// We convert ET → UTC using a direct offset approach:
+// build the ISO string with explicit 'Z', then verify.
 // ─────────────────────────────────────────────
+
+// Returns a Date object representing the exact UTC instant
+// for a given date+time expressed in America/New_York.
 function etToUtc(yr, mo, da, h, min) {
-  try {
-    for (var i = 0; i < 2; i++) {
-      var off = i === 0 ? 4 : 5;
-      var candidate = new Date(Date.UTC(yr, mo-1, da, h + off, min));
-      var fmt = new Intl.DateTimeFormat('en-US', {
+  // Determine ET offset by checking both EDT (UTC-4) and EST (UTC-5).
+  // We build a candidate UTC date for each offset and verify using
+  // Intl.DateTimeFormat which handles DST transitions automatically.
+  var offsets = [4, 5];
+  for (var i = 0; i < offsets.length; i++) {
+    var off = offsets[i];
+    // candidate = "if ET is UTC-off, what UTC time corresponds to h:min ET?"
+    var candidate = new Date(Date.UTC(yr, mo - 1, da, h + off, min, 0, 0));
+    try {
+      // Ask Intl: "what time is this UTC instant in New York?"
+      var nyStr = new Intl.DateTimeFormat('en-US', {
         timeZone: 'America/New_York',
-        hour: 'numeric', minute: '2-digit', hour12: false
-      });
-      var parts = fmt.formatToParts(candidate);
-      var hourPart   = parts.find(function(p){ return p.type==='hour'; });
-      var minutePart = parts.find(function(p){ return p.type==='minute'; });
-      if (!hourPart || !minutePart) continue;
-      var ch = parseInt(hourPart.value, 10) % 24;
-      var cm = parseInt(minutePart.value, 10);
-      if (ch === h && cm === min) return candidate;
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(candidate);
+      // nyStr is like "08:30" or "14:00"
+      var nyParts = nyStr.split(':');
+      var nyH = parseInt(nyParts[0], 10) % 24;
+      var nyM = parseInt(nyParts[1], 10);
+      if (nyH === h && nyM === min) {
+        console.log('etToUtc match: ET', h+':'+min, '→ UTC offset -'+off, '→', candidate.toISOString());
+        return candidate;
+      }
+    } catch (e) {
+      console.warn('etToUtc Intl check failed for offset', off, e);
     }
-  } catch(e) { console.warn('etToUtc error', e); }
-  // fallback: assume EST (UTC-5)
-  return new Date(Date.UTC(yr, mo-1, da, h + 5, min));
+  }
+  // Hard fallback: assume EDT (UTC-4, covers most of year for US news)
+  var fallback = new Date(Date.UTC(yr, mo - 1, da, h + 4, min, 0, 0));
+  console.warn('etToUtc: no match found, using EDT fallback →', fallback.toISOString());
+  return fallback;
 }
 
 // Parse FF date "MM-DD-YYYY" + time "8:30am" → { utcDate, isAllDay }
 function parseFFTime(dateStr, timeStr) {
   try {
-    if (!timeStr || timeStr === 'All Day' || timeStr === 'Tentative' || timeStr.trim() === '') {
+    var ts = (timeStr || '').trim();
+    if (!ts || ts === 'All Day' || ts === 'Tentative') {
       return { utcDate: null, isAllDay: true };
     }
-    var dateParts = (dateStr || '').split('-');
-    if (dateParts.length !== 3) return { utcDate: null, isAllDay: false };
-    var mo = parseInt(dateParts[0], 10);
-    var da = parseInt(dateParts[1], 10);
-    var yr = parseInt(dateParts[2], 10);
+    // Date: "05-07-2026" → mo=5, da=7, yr=2026
+    var dp = (dateStr || '').split('-');
+    if (dp.length !== 3) return { utcDate: null, isAllDay: false };
+    var mo = parseInt(dp[0], 10);
+    var da = parseInt(dp[1], 10);
+    var yr = parseInt(dp[2], 10);
     if (isNaN(mo) || isNaN(da) || isNaN(yr)) return { utcDate: null, isAllDay: false };
 
-    var m = timeStr.match(/^(\d{1,2}):(\d{2})(am|pm)$/i);
-    if (!m) return { utcDate: null, isAllDay: false };
-    var h   = parseInt(m[1], 10);
-    var min = parseInt(m[2], 10);
-    var ap  = m[3].toLowerCase();
+    // Time: "8:30am" or "12:00pm"
+    var tm = ts.match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/i);
+    if (!tm) return { utcDate: null, isAllDay: false };
+    var h   = parseInt(tm[1], 10);
+    var min = parseInt(tm[2], 10);
+    var ap  = tm[3].toLowerCase();
     if (ap === 'pm' && h !== 12) h += 12;
     if (ap === 'am' && h === 12) h = 0;
 
-    return { utcDate: etToUtc(yr, mo, da, h, min), isAllDay: false };
-  } catch(e) {
-    console.warn('parseFFTime error', dateStr, timeStr, e);
+    var utcDate = etToUtc(yr, mo, da, h, min);
+    return { utcDate: utcDate, isAllDay: false };
+  } catch (e) {
+    console.warn('parseFFTime error:', dateStr, timeStr, e);
     return { utcDate: null, isAllDay: false };
   }
 }
 
+// Format a UTC Date into the user's local timezone using Intl
+var _localFmt = null;
 function fmtLocalTime(utcDate) {
-  if (!utcDate) return '—';
+  if (!utcDate || !(utcDate instanceof Date) || isNaN(utcDate.getTime())) return '—';
   try {
-    return utcDate.toLocaleTimeString(navigator.language || 'it-IT', {
-      timeZone: USER_TZ, hour: '2-digit', minute: '2-digit', hour12: false
-    });
-  } catch(e) {
-    return utcDate.toUTCString().slice(17,22);
+    if (!_localFmt) {
+      _localFmt = new Intl.DateTimeFormat(navigator.language || 'it-IT', {
+        timeZone: USER_TZ,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+    }
+    return _localFmt.format(utcDate);
+  } catch (e) {
+    console.warn('fmtLocalTime error:', e);
+    // Absolute fallback: show UTC time
+    var uh = utcDate.getUTCHours();
+    var um = utcDate.getUTCMinutes();
+    return (uh < 10 ? '0' : '') + uh + ':' + (um < 10 ? '0' : '') + um;
   }
 }
 
+// Format UTC date as readable string for the tooltip
 function fmtUtcStr(utcDate) {
-  if (!utcDate) return '';
+  if (!utcDate || !(utcDate instanceof Date) || isNaN(utcDate.getTime())) return '';
   try {
-    // Format: "Wed 07 May 14:30 UTC"
-    return utcDate.toUTCString().replace(/:\d\d GMT$/, ' UTC');
-  } catch(e) { return ''; }
+    var uh = utcDate.getUTCHours();
+    var um = utcDate.getUTCMinutes();
+    var ud = utcDate.getUTCDate();
+    var mNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return ud + ' ' + mNames[utcDate.getUTCMonth()] + ' '
+      + (uh < 10 ? '0' : '') + uh + ':'
+      + (um < 10 ? '0' : '') + um + ' UTC';
+  } catch (e) { return ''; }
 }
 
 // ─────────────────────────────────────────────
@@ -483,7 +521,7 @@ function renderFromCache() {
       html += '<div class="event-card impact-' + ev.impact + (isPast?' past':'') + '">'
         + '<div class="event-top"><div class="event-time-wrap">'
         + '<span class="event-time' + (ev.isAllDay?' allday':'') + '" onclick="toggleUtc(\'' + uid + '\')">' + localTime + '</span>'
-        + (utcStr ? '<span class="event-utc-btn" onclick="toggleUtc(\''+uid+'\')">UTC ▾</span>'
+        + (utcStr ? '<span class="event-utc-btn" onclick="toggleUtc(\''+uid+'\')">'+ USER_TZ +' → ▾</span>'
                   + '<span class="event-utc-detail" id="'+uid+'">'+utcStr+'</span>' : '')
         + '</div>'
         + '<div class="event-right"><span class="event-currency">'+ev.currency+'</span></div>'
