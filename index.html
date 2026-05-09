@@ -260,6 +260,11 @@ body {
         <input id="risk" type="text" inputmode="decimal" placeholder="1.00" autocomplete="off" autocorrect="off" spellcheck="false" oninput="this.value=this.value.replace(',','.')">
         <span class="irow-unit">%</span>
       </div>
+      <div class="irow">
+        <label class="irow-label" for="contractsize">Contract Size</label>
+        <input id="contractsize" type="text" inputmode="decimal" placeholder="1" autocomplete="off" autocorrect="off" spellcheck="false" oninput="this.value=this.value.replace(',','.')">
+        <span class="irow-unit" id="cs-unit">/ lot</span>
+      </div>
     </div>
   </div>
 
@@ -315,8 +320,9 @@ body {
     <div class="res-rows">
       <div class="res-row"><span class="res-row-k">Strumento</span><span class="res-row-v" id="r-instr">—</span></div>
       <div class="res-row"><span class="res-row-k">Distanza SL</span><span class="res-row-v" id="r-pips">—</span></div>
-      <div class="res-row"><span class="res-row-k">Valore pip / lot</span><span class="res-row-v" id="r-pipval">—</span></div>
-      <div class="res-row"><span class="res-row-k">Contratto</span><span class="res-row-v" id="r-contract">—</span></div>
+      <div class="res-row"><span class="res-row-k">Valore punto / lot</span><span class="res-row-v" id="r-pipval">—</span></div>
+      <div class="res-row"><span class="res-row-k">Contract Size</span><span class="res-row-v" id="r-contract">—</span></div>
+      <div class="res-row" id="r-fx-row" style="display:none"><span class="res-row-k">Cambio applicato</span><span class="res-row-v" id="r-fx">—</span></div>
     </div>
   </div>
 
@@ -338,41 +344,67 @@ function setTheme(t) {
 }
 function toggleTheme() { setTheme(document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark'); }
 
-// ── Instrument ──
-let instrKey = null;
+// ── Instrument config ──
+// quoteCurrency: the currency in which 1 pip/point is denominated
+// If quoteCurrency !== 'USD', we need FX conversion to get USD value
+const CFG = {
+  EURUSD: { name:'EURUSD', label:'Euro / USD',    defaultCS:100000, pipSize:0.0001, pointValuePerLotPerUnit:10,  quoteCurrency:'USD', precise:true  },
+  AUDJPY: { name:'AUDJPY', label:'AUD / JPY',     defaultCS:100000, pipSize:0.01,   pointValuePerLotPerUnit:10,  quoteCurrency:'JPY', precise:true  },
+  EURGBP: { name:'EURGBP', label:'Euro / GBP',    defaultCS:100000, pipSize:0.0001, pointValuePerLotPerUnit:10,  quoteCurrency:'GBP', precise:true  },
+  XAUUSD: { name:'XAUUSD', label:'Gold',          defaultCS:100,    pipSize:0.01,   pointValuePerLotPerUnit:1,   quoteCurrency:'USD', precise:false },
+  USOIL:  { name:'USOIL.CASH', label:'Crude Oil', defaultCS:100,    pipSize:0.01,   pointValuePerLotPerUnit:1,   quoteCurrency:'USD', precise:false },
+  BTCUSD: { name:'BTCUSD', label:'Bitcoin',       defaultCS:1,      pipSize:1,      pointValuePerLotPerUnit:1,   quoteCurrency:'USD', precise:true  },
+  US500:  { name:'US500.CASH', label:'S&P 500',   defaultCS:1,      pipSize:0.1,    pointValuePerLotPerUnit:1,   quoteCurrency:'USD', precise:true  },
+  US100:  { name:'US100.CASH', label:'Nasdaq 100',defaultCS:1,      pipSize:0.1,    pointValuePerLotPerUnit:1,   quoteCurrency:'USD', precise:true  },
+  GER40:  { name:'GER40.CASH', label:'DAX 40',    defaultCS:1,      pipSize:0.1,    pointValuePerLotPerUnit:1,   quoteCurrency:'EUR', precise:true  },
+};
+
+// FX rates cache: rates vs USD (base=USD)
+let fxRates = {};
+let fxLoaded = false;
+
+async function loadFxRates() {
+  try {
+    const res = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    fxRates = data.rates || {};
+    fxLoaded = true;
+  } catch(e) {
+    console.warn('FX rates load failed:', e.message);
+    fxRates = {};
+    fxLoaded = false;
+  }
+}
+loadFxRates();
+
+// Convert 1 unit of `currency` to USD
+function toUSD(currency) {
+  if (currency === 'USD') return 1;
+  if (!fxLoaded || !fxRates[currency]) {
+    console.warn('No FX rate for', currency, '— defaulting to 1');
+    return 1;
+  }
+  // fxRates[X] = how many X per 1 USD → to get USD per X: 1/rate
+  return 1 / fxRates[currency];
+}
+
+// ── Instrument select: update contract size default ──
 function pickInstr(key) {
   instrKey = key || null;
   const wrap = document.getElementById('select-wrap');
-  if(key) wrap.classList.add('has-value');
+  if (key) wrap.classList.add('has-value');
   else wrap.classList.remove('has-value');
-}
 
-// ── Calc ──
-const CFG = {
-  // Forex: contractSize=100000, pipSize=0.0001 (0.01 for JPY pairs), pipValPerLot=10 USD
-  EURUSD: { name:'EURUSD', label:'Euro / USD',   contractSize:100000, pipSize:0.0001, pipValPerLot:10,   unit:'EUR', precise:true },
-  AUDJPY: { name:'AUDJPY', label:'AUD / JPY',    contractSize:100000, pipSize:0.01,   pipValPerLot:10,   unit:'AUD', precise:true },
-  EURGBP: { name:'EURGBP', label:'Euro / GBP',   contractSize:100000, pipSize:0.0001, pipValPerLot:10,   unit:'EUR', precise:true },
-  // Commodities
-  XAUUSD: { name:'XAUUSD', label:'Gold',          contractSize:100,   pipSize:0.01,   pipValPerLot:1,    unit:'oz',     precise:false },
-  USOIL:  { name:'USOIL.CASH', label:'Crude Oil', contractSize:1000,  pipSize:0.01,   pipValPerLot:10,   unit:'barili', precise:false },
-  // Crypto
-  BTCUSD: { name:'BTCUSD', label:'Bitcoin',       contractSize:1,     pipSize:1,      pipValPerLot:1,    unit:'BTC',    precise:true  },
-  // Indici
-  US500:  { name:'US500.CASH', label:'S&P 500',   contractSize:1,     pipSize:0.1,    pipValPerLot:1,    unit:'index',  precise:true  },
-  US100:  { name:'US100.CASH', label:'Nasdaq 100',contractSize:1,     pipSize:0.1,    pipValPerLot:1,    unit:'index',  precise:true  },
-  GER40:  { name:'GER40.CASH', label:'DAX 40',    contractSize:1,     pipSize:0.1,    pipValPerLot:1,    unit:'index',  precise:true  },
-};
+  if (key && CFG[key]) {
+    const c = CFG[key];
+    document.getElementById('contractsize').value = c.defaultCS;
+    document.getElementById('cs-unit').textContent = '/ lot';
+  }
+}
 
 function getVal(id) {
-  // comma already replaced by oninput handler
   return parseFloat(document.getElementById(id).value);
-}
-function getRisk(key, lots, pipDist, pDiff) {
-  const c = CFG[key];
-  if(c.precise && ['EURUSD','AUDJPY','EURGBP'].includes(key)) return lots * pipDist * c.pipValPerLot;
-  if(c.precise) return lots * pDiff * c.contractSize;
-  return lots * pipDist * c.pipValPerLot;
 }
 
 function showErr(m) {
@@ -384,111 +416,110 @@ function calculate() {
   document.getElementById('err-bar').classList.remove('show');
   document.getElementById('res-card').classList.remove('show');
 
-  const capital = getVal('capital');
-  const riskPct = getVal('risk');
-  const entry   = getVal('entry');
-  const exitP   = getVal('exitp');
+  const capital      = getVal('capital');
+  const riskPct      = getVal('risk');
+  const entry        = getVal('entry');
+  const exitP        = getVal('exitp');
+  const contractSize = getVal('contractsize') || (instrKey && CFG[instrKey] ? CFG[instrKey].defaultCS : 1);
 
-  if(!instrKey)               return showErr('Seleziona uno strumento.');
-  if(!capital || capital<=0)  return showErr('Inserisci un capitale valido.');
-  if(!riskPct || riskPct<=0)  return showErr('Inserisci un risk % valido (es. 1.00).');
-  if(!entry   || entry<=0)    return showErr('Inserisci un entry price.');
-  if(!exitP   || exitP<=0)    return showErr('Inserisci uno SL / exit price.');
-  if(entry===exitP)           return showErr('Entry e SL non possono coincidere.');
+  if (!instrKey)              return showErr('Seleziona uno strumento.');
+  if (!capital || capital<=0) return showErr('Inserisci un capitale valido.');
+  if (!riskPct || riskPct<=0) return showErr('Inserisci un risk % valido (es. 1.00).');
+  if (!entry   || entry<=0)   return showErr('Inserisci un entry price.');
+  if (!exitP   || exitP<=0)   return showErr('Inserisci uno SL / exit price.');
+  if (entry === exitP)        return showErr('Entry e SL non possono coincidere.');
+  if (!contractSize || contractSize<=0) return showErr('Contract size non valida.');
 
-  const c      = CFG[instrKey];
-  const target = capital * riskPct / 100;
-  const pDiff  = Math.abs(entry - exitP);
+  const c       = CFG[instrKey];
+  const target  = capital * riskPct / 100;
+  const pDiff   = Math.abs(entry - exitP);
 
-  const FOREX = ['EURUSD','AUDJPY','EURGBP'];
-  const INDICES = ['US500','US100','GER40'];
-  let pipDist, lotsRaw;
-  if(FOREX.includes(instrKey)) {
-    pipDist = pDiff / c.pipSize;
-    lotsRaw = target / (pipDist * c.pipValPerLot);
-  } else if(instrKey==='BTCUSD') {
-    pipDist = pDiff;
-    lotsRaw = target / (pDiff * c.contractSize);
-  } else if(INDICES.includes(instrKey)) {
-    pipDist = pDiff / c.pipSize;
-    lotsRaw = target / (pDiff * c.contractSize);
-  } else {
-    // XAUUSD, USOIL
-    pipDist = pDiff / c.pipSize;
-    lotsRaw = target / (pipDist * c.pipValPerLot);
-  }
+  // FX conversion: if quote currency is not USD, convert point value to USD
+  const fxRate     = toUSD(c.quoteCurrency);           // USD per 1 quote currency unit
+  const fxApplied  = c.quoteCurrency !== 'USD';
 
+  // Point value per lot in account currency (USD):
+  // For forex: 1 pip move on contractSize units = contractSize * pipSize * fxRate USD per lot
+  // For everything else: 1 point move on contractSize units = contractSize * pipSize * fxRate
+  // Generalised: pointValuePerLot = contractSize * pipSize * fxRate
+  const pointValuePerLot = contractSize * c.pipSize * fxRate;  // USD per pip/point per lot
+
+  // pip distance
+  const pipDist = pDiff / c.pipSize;
+
+  // raw lots: target = lots * pipDist * pointValuePerLot
+  const lotsRaw = target / (pipDist * pointValuePerLot);
+
+  // Rounding
   let bestLots, bestRisk;
   const compSection = document.getElementById('comp-section');
 
-  if(c.precise) {
-    bestLots = Math.round(lotsRaw*100)/100;
-    bestRisk = getRisk(instrKey, bestLots, pipDist, pDiff);
+  const calcRisk = (lots) => lots * pipDist * pointValuePerLot;
+
+  if (c.precise) {
+    bestLots = Math.round(lotsRaw * 100) / 100;
+    bestRisk = calcRisk(bestLots);
     compSection.classList.remove('show');
   } else {
-    const step=0.01;
-    const ld=+(Math.floor(lotsRaw/step)*step).toFixed(4);
-    const lu=+(ld+step).toFixed(4);
-    const rd=getRisk(instrKey,ld,pipDist,pDiff);
-    const ru=getRisk(instrKey,lu,pipDist,pDiff);
-    const bestIsUp = Math.abs(ru-target) <= Math.abs(rd-target);
+    const step = 0.01;
+    const ld = +(Math.floor(lotsRaw / step) * step).toFixed(4);
+    const lu = +(ld + step).toFixed(4);
+    const rd = calcRisk(ld);
+    const ru = calcRisk(lu);
+    const bestIsUp = Math.abs(ru - target) <= Math.abs(rd - target);
     bestLots = bestIsUp ? lu : ld;
     bestRisk = bestIsUp ? ru : rd;
 
-    const cdCard=document.getElementById('comp-down');
-    const cuCard=document.getElementById('comp-up');
+    const cdCard = document.getElementById('comp-down');
+    const cuCard = document.getElementById('comp-up');
     cdCard.classList.remove('best'); cuCard.classList.remove('best');
     cdCard.querySelector('.comp-best-badge') && cdCard.querySelector('.comp-best-badge').remove();
     cuCard.querySelector('.comp-best-badge') && cuCard.querySelector('.comp-best-badge').remove();
 
     document.getElementById('cd-lot').textContent  = ld.toFixed(2);
-    document.getElementById('cd-risk').textContent = '$'+rd.toFixed(2);
-    document.getElementById('cd-diff').textContent = 'Δ $'+Math.abs(rd-target).toFixed(2)+' dal target';
+    document.getElementById('cd-risk').textContent = '$' + rd.toFixed(2);
+    document.getElementById('cd-diff').textContent = 'Δ $' + Math.abs(rd - target).toFixed(2) + ' dal target';
     document.getElementById('cu-lot').textContent  = lu.toFixed(2);
-    document.getElementById('cu-risk').textContent = '$'+ru.toFixed(2);
-    document.getElementById('cu-diff').textContent = 'Δ $'+Math.abs(ru-target).toFixed(2)+' dal target';
+    document.getElementById('cu-risk').textContent = '$' + ru.toFixed(2);
+    document.getElementById('cu-diff').textContent = 'Δ $' + Math.abs(ru - target).toFixed(2) + ' dal target';
 
     const bestCard = bestIsUp ? cuCard : cdCard;
     bestCard.classList.add('best');
-    const badge=document.createElement('div');
-    badge.className='comp-best-badge'; badge.textContent='Consigliato';
+    const badge = document.createElement('div');
+    badge.className = 'comp-best-badge'; badge.textContent = 'Consigliato';
     bestCard.insertBefore(badge, bestCard.firstChild);
     compSection.classList.add('show');
   }
 
-  let pipValTxt, pipDistTxt;
-  if(FOREX.includes(instrKey)) {
-    pipValTxt='$'+c.pipValPerLot.toFixed(2)+' / pip per lot';
-    pipDistTxt=pipDist.toFixed(0)+' pips ('+pDiff.toFixed(c.pipSize<0.01?5:4)+')';
-  } else if(instrKey==='BTCUSD') {
-    pipValTxt='$1.00 / $1 move per lot';
-    pipDistTxt='$'+pDiff.toFixed(2);
-  } else if(INDICES.includes(instrKey)) {
-    pipValTxt='$1.00 / punto per lot';
-    pipDistTxt=pDiff.toFixed(1)+' punti';
-  } else if(instrKey==='XAUUSD') {
-    pipValTxt='$1.00 / pip per lot';
-    pipDistTxt=pipDist.toFixed(0)+' pips ($'+pDiff.toFixed(2)+')';
-  } else if(instrKey==='USOIL') {
-    pipValTxt='$10.00 / pip per lot';
-    pipDistTxt=pipDist.toFixed(0)+' pips ($'+pDiff.toFixed(2)+')';
+  // Display
+  const pipValTxt  = '$' + pointValuePerLot.toFixed(4).replace(/\.?0+$/, '') + ' / pip per lot';
+  const pipDistTxt = pipDist.toFixed(c.pipSize <= 0.01 ? 0 : 1)
+    + ' pip  ($' + pDiff.toFixed(c.pipSize < 0.001 ? 5 : 2) + ')';
+
+  document.getElementById('res-lot').textContent   = bestLots.toFixed(2);
+  document.getElementById('res-risk').textContent  = '$' + bestRisk.toFixed(2);
+  document.getElementById('r-instr').textContent   = c.name + ' — ' + c.label;
+  document.getElementById('r-pips').textContent    = pipDistTxt;
+  document.getElementById('r-pipval').textContent  = pipValTxt;
+  document.getElementById('r-contract').textContent= contractSize + ' / lot';
+
+  const fxRow = document.getElementById('r-fx-row');
+  if (fxApplied) {
+    document.getElementById('r-fx').textContent =
+      '1 ' + c.quoteCurrency + ' = $' + fxRate.toFixed(4) + (fxLoaded ? '' : ' (stimato)');
+    fxRow.style.display = '';
+  } else {
+    fxRow.style.display = 'none';
   }
 
-  document.getElementById('res-lot').textContent    = bestLots.toFixed(2);
-  document.getElementById('res-risk').textContent   = '$'+bestRisk.toFixed(2);
-  document.getElementById('r-instr').textContent    = c.name+' — '+c.label;
-  document.getElementById('r-pips').textContent     = pipDistTxt;
-  document.getElementById('r-pipval').textContent   = pipValTxt;
-  document.getElementById('r-contract').textContent = c.contractSize+' '+c.unit+' / lot';
-
   document.getElementById('res-card').classList.add('show');
-  setTimeout(()=>document.getElementById('res-card').scrollIntoView({behavior:'smooth',block:'nearest'}),80);
+  setTimeout(() => document.getElementById('res-card').scrollIntoView({behavior:'smooth', block:'nearest'}), 80);
 }
 
 function resetAll() {
   instrKey=null;
   document.querySelectorAll('.instr-tile').forEach(t=>t.classList.remove('active'));
-  ['capital','risk','entry','exitp'].forEach(id=>{ document.getElementById(id).value=''; });
+  ['capital','risk','entry','exitp','contractsize'].forEach(id=>{ document.getElementById(id).value=''; });
   document.getElementById('instrument').value='';
   document.getElementById('select-wrap').classList.remove('has-value');
   document.getElementById('err-bar').classList.remove('show');

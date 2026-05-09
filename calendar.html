@@ -84,9 +84,6 @@ body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;back
 .impact-Low .event-time{color:var(--blue)}
 .past .event-time{color:var(--past-text)!important}
 .event-time.allday{font-size:11px;font-weight:600;color:var(--muted)}
-.event-utc-btn{font-size:10px;color:var(--faint);cursor:pointer;-webkit-user-select:none;user-select:none;letter-spacing:.03em}
-.event-utc-detail{display:none;font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;margin-top:2px}
-.event-utc-detail.show{display:block}
 .event-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
 .event-currency{font-size:11px;font-weight:700;letter-spacing:.07em;padding:2px 7px;border-radius:5px}
 .impact-High .event-currency{background:var(--red-bg);color:var(--red);border:1px solid var(--red-br)}
@@ -104,6 +101,22 @@ body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;back
 .refresh-row{display:flex;justify-content:center;padding:12px 0}
 .refresh-btn{background:var(--surface2);border:none;color:var(--muted);font-family:inherit;font-size:13px;padding:8px 20px;border-radius:20px;cursor:pointer;touch-action:manipulation}
 .refresh-btn:active{background:var(--border)}
+.section-label{font-size:11px;font-weight:700;color:var(--faint);letter-spacing:.09em;text-transform:uppercase}
+.market-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:10px;transition:background .2s}
+.market-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.market-name{font-size:16px;font-weight:700;letter-spacing:-.2px}
+.market-status{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.05em;text-transform:uppercase}
+.market-status.open{background:var(--green-bg);color:var(--green);border:1px solid var(--green)}
+.market-status.closed{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.market-status.pre{background:var(--acc-bg);color:var(--acc);border:1px solid var(--acc-br)}
+.market-times{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.market-time-row{display:flex;flex-direction:column;gap:2px}
+.market-time-label{font-size:10px;font-weight:600;color:var(--faint);letter-spacing:.07em;text-transform:uppercase}
+.market-time-val{font-size:15px;font-weight:600;color:var(--text)}
+.market-instruments{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.market-pill{font-size:11px;font-weight:600;background:var(--surface2);color:var(--muted);border:1px solid var(--border);padding:2px 9px;border-radius:20px}
+.market-note{font-size:11px;color:var(--faint);margin-top:8px}
+.market-clock{font-size:11px;color:var(--muted);margin-top:6px;display:flex;align-items:center;gap:4px}
 </style>
 </head>
 <body>
@@ -118,7 +131,8 @@ body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;back
 </div>
 <div class="nav-tabs">
   <a class="nav-tab" href="index.html">Calcolatore</a>
-  <a class="nav-tab active" href="calendar.html">Calendario</a>
+  <a class="nav-tab" id="tab-cal" onclick="showSection('calendar')" style="cursor:pointer">Calendario</a>
+  <a class="nav-tab" id="tab-markets" onclick="showSection('markets')" style="cursor:pointer">Borse</a>
 </div>
 <div class="controls-bar">
   <div class="week-nav">
@@ -148,6 +162,13 @@ body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;back
     </div>
   </div>
 </div>
+<div class="scroll-body" id="section-markets" style="display:none">
+  <div style="padding:4px 0 16px">
+    <div class="section-label" style="margin-bottom:0">Orari aggiornati al tuo fuso orario</div>
+  </div>
+  <div id="markets-body"></div>
+</div>
+<div id="section-calendar">
 <div class="scroll-body">
   <div class="error-bar" id="err-bar">
     <span style="font-size:18px;flex-shrink:0">⚠</span>
@@ -155,6 +176,7 @@ body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;back
   </div>
   <div id="cal-body"><div class="status-box"><div class="spinner"></div>Caricamento…</div></div>
   <div class="refresh-row"><button class="refresh-btn" onclick="loadCalendar()">↺ Aggiorna</button></div>
+</div>
 </div>
 <script>
 // ─────────────────────────────────────────────
@@ -246,65 +268,60 @@ function fmtWeekLabel(monday, sunday) {
 }
 
 // ─────────────────────────────────────────────
-// TIMEZONE CONVERSION
-// FF times are in US Eastern Time (America/New_York).
-// We convert ET → UTC using a direct offset approach:
-// build the ISO string with explicit 'Z', then verify.
+// TIMEZONE CONVERSION — DST-safe, zero hardcoded offsets
+//
+// Problem: FF gives us a "wall clock" time in America/New_York
+// (e.g. "8:30am"). We need the exact UTC instant that corresponds
+// to that wall clock time, accounting for DST automatically.
+//
+// Technique: binary-search / iterative correction using only Intl.
+// 1. Make an initial UTC guess (treat the ET time as-is UTC).
+// 2. Ask Intl: "what does America/New_York show for this UTC?"
+// 3. Compute the difference between what NY shows and what we want.
+// 4. Correct the UTC guess by that difference.
+// 5. Repeat once to handle edge cases (DST boundary).
+// This never hardcodes "+4" or "+5" — Intl handles DST fully.
 // ─────────────────────────────────────────────
-
-// Returns a Date object representing the exact UTC instant
-// for a given date+time expressed in America/New_York.
 function etToUtc(yr, mo, da, h, min) {
-  // Determine ET offset by checking both EDT (UTC-4) and EST (UTC-5).
-  // We build a candidate UTC date for each offset and verify using
-  // Intl.DateTimeFormat which handles DST transitions automatically.
-  var offsets = [4, 5];
-  for (var i = 0; i < offsets.length; i++) {
-    var off = offsets[i];
-    // candidate = "if ET is UTC-off, what UTC time corresponds to h:min ET?"
-    var candidate = new Date(Date.UTC(yr, mo - 1, da, h + off, min, 0, 0));
-    try {
-      // Ask Intl: "what time is this UTC instant in New York?"
-      var nyStr = new Intl.DateTimeFormat('en-US', {
-        timeZone: 'America/New_York',
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit'
-      }).format(candidate);
-      // nyStr is like "08:30" or "14:00"
-      var nyParts = nyStr.split(':');
-      var nyH = parseInt(nyParts[0], 10) % 24;
-      var nyM = parseInt(nyParts[1], 10);
-      if (nyH === h && nyM === min) {
-        console.log('etToUtc match: ET', h+':'+min, '→ UTC offset -'+off, '→', candidate.toISOString());
-        return candidate;
-      }
-    } catch (e) {
-      console.warn('etToUtc Intl check failed for offset', off, e);
-    }
+  // Step 1: naive guess — treat the wall-clock time as UTC
+  var guess = new Date(Date.UTC(yr, mo - 1, da, h, min, 0, 0));
+
+  for (var iter = 0; iter < 3; iter++) {
+    // Step 2: what does New York show for this UTC instant?
+    var nyStr = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York',
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(guess);
+
+    // Step 3: parse the NY wall-clock time shown
+    var colon = nyStr.indexOf(':');
+    var nyH = parseInt(nyStr.substring(0, colon), 10) % 24;
+    var nyM = parseInt(nyStr.substring(colon + 1), 10);
+
+    // Step 4: compute difference in minutes between what NY shows vs what we want
+    var diffMin = (h * 60 + min) - (nyH * 60 + nyM);
+    if (diffMin === 0) return guess; // exact match
+
+    // Step 5: correct the guess
+    guess = new Date(guess.getTime() + diffMin * 60000);
   }
-  // Hard fallback: assume EDT (UTC-4, covers most of year for US news)
-  var fallback = new Date(Date.UTC(yr, mo - 1, da, h + 4, min, 0, 0));
-  console.warn('etToUtc: no match found, using EDT fallback →', fallback.toISOString());
-  return fallback;
+  return guess;
 }
 
-// Parse FF date "MM-DD-YYYY" + time "8:30am" → { utcDate, isAllDay }
 function parseFFTime(dateStr, timeStr) {
   try {
     var ts = (timeStr || '').trim();
     if (!ts || ts === 'All Day' || ts === 'Tentative') {
       return { utcDate: null, isAllDay: true };
     }
-    // Date: "05-07-2026" → mo=5, da=7, yr=2026
     var dp = (dateStr || '').split('-');
     if (dp.length !== 3) return { utcDate: null, isAllDay: false };
     var mo = parseInt(dp[0], 10);
     var da = parseInt(dp[1], 10);
     var yr = parseInt(dp[2], 10);
     if (isNaN(mo) || isNaN(da) || isNaN(yr)) return { utcDate: null, isAllDay: false };
-
-    // Time: "8:30am" or "12:00pm"
     var tm = ts.match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/i);
     if (!tm) return { utcDate: null, isAllDay: false };
     var h   = parseInt(tm[1], 10);
@@ -312,50 +329,27 @@ function parseFFTime(dateStr, timeStr) {
     var ap  = tm[3].toLowerCase();
     if (ap === 'pm' && h !== 12) h += 12;
     if (ap === 'am' && h === 12) h = 0;
-
-    var utcDate = etToUtc(yr, mo, da, h, min);
-    return { utcDate: utcDate, isAllDay: false };
-  } catch (e) {
+    return { utcDate: etToUtc(yr, mo, da, h, min), isAllDay: false };
+  } catch(e) {
     console.warn('parseFFTime error:', dateStr, timeStr, e);
     return { utcDate: null, isAllDay: false };
   }
 }
 
-// Format a UTC Date into the user's local timezone using Intl
-var _localFmt = null;
 function fmtLocalTime(utcDate) {
-  if (!utcDate || !(utcDate instanceof Date) || isNaN(utcDate.getTime())) return '—';
+  if (!utcDate || isNaN(utcDate.getTime())) return '—';
   try {
-    if (!_localFmt) {
-      _localFmt = new Intl.DateTimeFormat(navigator.language || 'it-IT', {
-        timeZone: USER_TZ,
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      });
-    }
-    return _localFmt.format(utcDate);
-  } catch (e) {
-    console.warn('fmtLocalTime error:', e);
-    // Absolute fallback: show UTC time
+    return new Intl.DateTimeFormat(navigator.language || 'it-IT', {
+      timeZone: USER_TZ,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }).format(utcDate);
+  } catch(e) {
     var uh = utcDate.getUTCHours();
     var um = utcDate.getUTCMinutes();
     return (uh < 10 ? '0' : '') + uh + ':' + (um < 10 ? '0' : '') + um;
   }
-}
-
-// Format UTC date as readable string for the tooltip
-function fmtUtcStr(utcDate) {
-  if (!utcDate || !(utcDate instanceof Date) || isNaN(utcDate.getTime())) return '';
-  try {
-    var uh = utcDate.getUTCHours();
-    var um = utcDate.getUTCMinutes();
-    var ud = utcDate.getUTCDate();
-    var mNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return ud + ' ' + mNames[utcDate.getUTCMonth()] + ' '
-      + (uh < 10 ? '0' : '') + uh + ':'
-      + (um < 10 ? '0' : '') + um + ' UTC';
-  } catch (e) { return ''; }
 }
 
 // ─────────────────────────────────────────────
@@ -509,7 +503,6 @@ function renderFromCache() {
 
     evs.forEach(function(ev) {
       var localTime = ev.isAllDay ? 'All Day' : fmtLocalTime(ev.utcDate);
-      var utcStr    = (!ev.isAllDay && ev.utcDate) ? fmtUtcStr(ev.utcDate) : '';
       var isPast    = !ev.isAllDay && ev.utcDate && ev.utcDate < now;
       var uid       = 'u' + Math.random().toString(36).slice(2,9);
 
@@ -520,9 +513,7 @@ function renderFromCache() {
 
       html += '<div class="event-card impact-' + ev.impact + (isPast?' past':'') + '">'
         + '<div class="event-top"><div class="event-time-wrap">'
-        + '<span class="event-time' + (ev.isAllDay?' allday':'') + '" onclick="toggleUtc(\'' + uid + '\')">' + localTime + '</span>'
-        + (utcStr ? '<span class="event-utc-btn" onclick="toggleUtc(\''+uid+'\')">'+ USER_TZ +' → ▾</span>'
-                  + '<span class="event-utc-detail" id="'+uid+'">'+utcStr+'</span>' : '')
+        + '<span class="event-time' + (ev.isAllDay?' allday':'') + '">' + localTime + '</span>'
         + '</div>'
         + '<div class="event-right"><span class="event-currency">'+ev.currency+'</span></div>'
         + '</div>'
@@ -540,6 +531,198 @@ function renderFromCache() {
 function toggleUtc(id) {
   var el = document.getElementById(id);
   if (el) el.classList.toggle('show');
+}
+
+// ─────────────────────────────────────────────
+// SECTION SWITCHING
+// ─────────────────────────────────────────────
+var currentSection = 'calendar';
+function showSection(sec) {
+  currentSection = sec;
+  document.getElementById('section-calendar').style.display = sec === 'calendar' ? '' : 'none';
+  document.getElementById('section-markets').style.display  = sec === 'markets'  ? '' : 'none';
+  // controls bar (filters/week nav) only for calendar
+  document.querySelector('.controls-bar').style.display = sec === 'calendar' ? '' : 'none';
+  document.getElementById('tab-cal').className     = 'nav-tab' + (sec === 'calendar' ? ' active' : '');
+  document.getElementById('tab-markets').className = 'nav-tab' + (sec === 'markets'  ? ' active' : '');
+  if (sec === 'markets') renderMarkets();
+}
+
+// ─────────────────────────────────────────────
+// MARKET HOURS
+// All times stored as [openH, openM, closeH, closeM] in the market's local TZ
+// ─────────────────────────────────────────────
+var MARKETS = [
+  {
+    name: 'New York',
+    flag: '🇺🇸',
+    tz: 'America/New_York',
+    sessions: [{ label: 'Regular', open: [9,30], close: [16,0] }],
+    instruments: ['US500','US100','BTCUSD','XAUUSD','USOIL'],
+    note: 'Pre-market 04:00–09:30, After-hours 16:00–20:00'
+  },
+  {
+    name: 'Londra',
+    flag: '🇬🇧',
+    tz: 'Europe/London',
+    sessions: [{ label: 'Regular', open: [8,0], close: [16,30] }],
+    instruments: ['EURGBP','EURUSD','XAUUSD'],
+    note: 'Overlap NY–Londra: 14:30–16:30 ora Roma'
+  },
+  {
+    name: 'Francoforte',
+    flag: '🇩🇪',
+    tz: 'Europe/Berlin',
+    sessions: [{ label: 'Xetra', open: [9,0], close: [17,30] }],
+    instruments: ['GER40','EURUSD','EURGBP'],
+    note: 'Pre-trading 08:00–09:00'
+  },
+  {
+    name: 'Tokyo',
+    flag: '🇯🇵',
+    tz: 'Asia/Tokyo',
+    sessions: [
+      { label: 'Mattina',   open: [9,0],  close: [11,30] },
+      { label: 'Pomeriggio',open: [12,30], close: [15,30] }
+    ],
+    instruments: ['AUDJPY'],
+    note: 'Pausa pranzo 11:30–12:30'
+  }
+];
+
+function wallClockInTz(tz) {
+  // Returns { h, m, dayOfWeek } for the current moment in the given timezone
+  try {
+    var fmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz, hour12: false,
+      hour: '2-digit', minute: '2-digit', weekday: 'short'
+    });
+    var parts = fmt.formatToParts(new Date());
+    var h   = parseInt(parts.find(function(p){ return p.type==='hour'; }).value, 10) % 24;
+    var m   = parseInt(parts.find(function(p){ return p.type==='minute'; }).value, 10);
+    var wd  = parts.find(function(p){ return p.type==='weekday'; }).value; // Mon/Tue/...
+    return { h: h, m: m, wd: wd };
+  } catch(e) { return { h: 0, m: 0, wd: 'Mon' }; }
+}
+
+function toUserTime(tz, h, m) {
+  // Convert h:m in `tz` → display in USER_TZ
+  // Build a Date for today at h:m in `tz` then format in USER_TZ
+  try {
+    var now = new Date();
+    // Get today's date in `tz`
+    var dateFmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit'
+    });
+    var dateParts = dateFmt.formatToParts(now);
+    var yr = parseInt(dateParts.find(function(p){ return p.type==='year'; }).value, 10);
+    var mo = parseInt(dateParts.find(function(p){ return p.type==='month'; }).value, 10);
+    var da = parseInt(dateParts.find(function(p){ return p.type==='day'; }).value, 10);
+
+    // Use the iterative correction trick (same as etToUtc but generic)
+    var guess = new Date(Date.UTC(yr, mo - 1, da, h, m, 0, 0));
+    for (var i = 0; i < 3; i++) {
+      var shown = new Intl.DateTimeFormat('en-US', {
+        timeZone: tz, hour12: false, hour: '2-digit', minute: '2-digit'
+      }).format(guess);
+      var colon = shown.indexOf(':');
+      var sh = parseInt(shown.substring(0, colon), 10) % 24;
+      var sm = parseInt(shown.substring(colon + 1), 10);
+      var diff = (h * 60 + m) - (sh * 60 + sm);
+      if (diff === 0) break;
+      guess = new Date(guess.getTime() + diff * 60000);
+    }
+    // Format in USER_TZ
+    return new Intl.DateTimeFormat(navigator.language || 'it-IT', {
+      timeZone: USER_TZ, hour: '2-digit', minute: '2-digit', hour12: false
+    }).format(guess);
+  } catch(e) { return h + ':' + (m < 10 ? '0' : '') + m; }
+}
+
+function getMarketStatus(market) {
+  var wc = wallClockInTz(market.tz);
+  var isWeekend = wc.wd === 'Sat' || wc.wd === 'Sun';
+  if (isWeekend) return 'closed';
+  var nowMin = wc.h * 60 + wc.m;
+  for (var i = 0; i < market.sessions.length; i++) {
+    var s = market.sessions[i];
+    var openMin  = s.open[0]  * 60 + s.open[1];
+    var closeMin = s.close[0] * 60 + s.close[1];
+    if (nowMin >= openMin && nowMin < closeMin) return 'open';
+  }
+  return 'closed';
+}
+
+function renderMarkets() {
+  var body = document.getElementById('markets-body');
+  var now  = new Date();
+  var html = '';
+
+  // Live clock line
+  var localTimeStr = new Intl.DateTimeFormat(navigator.language || 'it-IT', {
+    timeZone: USER_TZ, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+  }).format(now);
+
+  html += '<div style="text-align:center;padding:0 0 16px">'
+    + '<div style="font-size:28px;font-weight:800;letter-spacing:-1px;color:var(--text)" id="mkt-clock">' + localTimeStr + '</div>'
+    + '<div style="font-size:11px;color:var(--muted);margin-top:2px">' + USER_TZ.replace(/_/g,' ') + '</div>'
+    + '</div>';
+
+  MARKETS.forEach(function(market) {
+    var status = getMarketStatus(market);
+    var statusLabel = status === 'open' ? 'Aperta' : 'Chiusa';
+    var statusClass = status;
+
+    html += '<div class="market-card">'
+      + '<div class="market-header">'
+      + '<div style="display:flex;align-items:center;gap:8px">'
+      + '<span style="font-size:22px">' + market.flag + '</span>'
+      + '<span class="market-name">' + market.name + '</span>'
+      + '</div>'
+      + '<span class="market-status ' + statusClass + '">' + statusLabel + '</span>'
+      + '</div>'
+      + '<div class="market-times">';
+
+    market.sessions.forEach(function(s) {
+      var openLocal  = toUserTime(market.tz, s.open[0],  s.open[1]);
+      var closeLocal = toUserTime(market.tz, s.close[0], s.close[1]);
+      html += '<div class="market-time-row">'
+        + '<span class="market-time-label">' + s.label + ' — Apertura</span>'
+        + '<span class="market-time-val">' + openLocal + '</span>'
+        + '</div>'
+        + '<div class="market-time-row">'
+        + '<span class="market-time-label">' + s.label + ' — Chiusura</span>'
+        + '<span class="market-time-val">' + closeLocal + '</span>'
+        + '</div>';
+    });
+
+    html += '</div>'; // market-times
+
+    // Instruments
+    html += '<div class="market-instruments">';
+    market.instruments.forEach(function(ins) {
+      html += '<span class="market-pill">' + ins + '</span>';
+    });
+    html += '</div>';
+
+    if (market.note) {
+      html += '<div class="market-note">' + market.note + '</div>';
+    }
+
+    html += '</div>'; // market-card
+  });
+
+  body.innerHTML = html;
+
+  // Tick clock every second
+  clearInterval(window._mktClockInterval);
+  window._mktClockInterval = setInterval(function() {
+    var el = document.getElementById('mkt-clock');
+    if (!el) { clearInterval(window._mktClockInterval); return; }
+    el.textContent = new Intl.DateTimeFormat(navigator.language || 'it-IT', {
+      timeZone: USER_TZ, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+    }).format(new Date());
+  }, 1000);
 }
 
 // ─────────────────────────────────────────────
@@ -570,6 +753,7 @@ async function loadCalendar() {
 }
 
 loadCalendar();
+showSection('calendar');
 </script>
 </body>
 </html>
