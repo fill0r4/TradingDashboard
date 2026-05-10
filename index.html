@@ -8,218 +8,145 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#0c0c0c" id="theme-meta">
-<title>Lot Calc</title>
+<title>Trading Dashboard</title>
 <style>
-:root[data-theme="dark"] {
-  --bg:#0c0c0c; --surface:#161616; --surface2:#1e1e1e; --border:#2a2a2a;
-  --green:#4ade80; --green-bg:#0f1f0f; --yellow:#facc15; --yellow-bg:#181400;
-  --yellow-br:#302800; --red:#ef4444; --red-bg:#1c0808; --red-br:#5a1a1a;
-  --text:#e8e8e0; --muted:#777; --faint:#444; --focus-bg:#141a14; --toggle-bg:#1e1e1e;
+:root[data-theme="dark"]{
+  --bg:#0c0c0c;--surface:#161616;--surface2:#1e1e1e;--border:#2a2a2a;
+  --green:#4ade80;--green-bg:#0f1f0f;--green-br:#1a3a1a;
+  --yellow:#facc15;--yellow-bg:#181400;--yellow-br:#302800;
+  --red:#ef4444;--red-bg:#1c0808;--red-br:#5a1a1a;
+  --text:#e8e8e0;--muted:#777;--faint:#444;--toggle-bg:#1e1e1e;
+  --focus-bg:#141a14;
 }
-:root[data-theme="light"] {
-  --bg:#f2f2f7; --surface:#ffffff; --surface2:#e8e8ed; --border:#d1d1d6;
-  --green:#16a34a; --green-bg:#f0fdf4; --yellow:#b45309; --yellow-bg:#fffbeb;
-  --yellow-br:#fde68a; --red:#dc2626; --red-bg:#fef2f2; --red-br:#fecaca;
-  --text:#1c1c1e; --muted:#6b6b6b; --faint:#aeaeb2; --focus-bg:#f0fdf4; --toggle-bg:#e5e5ea;
+:root[data-theme="light"]{
+  --bg:#f2f2f7;--surface:#ffffff;--surface2:#e8e8ed;--border:#d1d1d6;
+  --green:#16a34a;--green-bg:#f0fdf4;--green-br:#bbf7d0;
+  --yellow:#b45309;--yellow-bg:#fffbeb;--yellow-br:#fde68a;
+  --red:#dc2626;--red-bg:#fef2f2;--red-br:#fecaca;
+  --text:#1c1c1e;--muted:#6b6b6b;--faint:#aeaeb2;--toggle-bg:#e5e5ea;
+  --focus-bg:#f0fdf4;
 }
-
-* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-html { font-size:16px; background:var(--bg); transition:background 0.2s; }
-body {
-  font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;
-  background:var(--bg); color:var(--text); min-height:100vh;
-  display:flex; flex-direction:column;
-  padding-top:env(safe-area-inset-top,0);
-  transition:background 0.2s,color 0.2s;
-}
-
-.app-header {
-  padding:16px 20px 14px; border-bottom:1px solid var(--border);
-  display:flex; align-items:center; justify-content:space-between;
-  background:var(--bg); position:sticky; top:0; z-index:10;
-  transition:background 0.2s,border-color 0.2s;
-}
-.header-text .title { font-size:18px; font-weight:700; letter-spacing:-0.4px; }
-.header-text .sub { font-size:12px; color:var(--muted); margin-top:1px; }
-.header-actions { display:flex; align-items:center; gap:8px; }
-
-.theme-toggle {
-  width:44px; height:26px; background:var(--toggle-bg); border:1px solid var(--border);
-  border-radius:13px; cursor:pointer; position:relative; transition:background 0.2s;
-  flex-shrink:0; touch-action:manipulation;
-}
-.theme-toggle-knob {
-  position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%;
-  background:var(--text); transition:transform 0.2s;
-  display:flex; align-items:center; justify-content:center; font-size:11px;
-}
-[data-theme="light"] .theme-toggle-knob { transform:translateX(18px); }
-
-
-/* ── Nav tabs ── */
-.nav-tabs {
-  display:flex; border-bottom:1px solid var(--border);
-  background:var(--bg); position:sticky; top:57px; z-index:9;
-  transition:background 0.2s;
-}
-.nav-tab {
-  flex:1; padding:12px 0; font-size:13px; font-weight:600;
-  color:var(--muted); text-align:center; cursor:pointer;
-  border-bottom:2px solid transparent; transition:color 0.15s,border-color 0.15s;
-  text-decoration:none; letter-spacing:0.02em;
-}
-.nav-tab.active { color:var(--green); border-bottom-color:var(--green); }
-
-.reset-btn {
-  background:var(--surface2); border:none; color:var(--muted); font-size:13px;
-  font-family:inherit; padding:7px 14px; border-radius:20px; cursor:pointer;
-  min-height:34px; transition:background 0.12s; touch-action:manipulation;
-}
-.reset-btn:active { background:var(--border); color:var(--text); }
-
-.scroll-body {
-  flex:1; padding:20px 16px 40px; display:flex; flex-direction:column;
-  gap:20px; max-width:560px; width:100%; margin:0 auto;
-}
-.section-label {
-  font-size:11px; font-weight:700; color:var(--faint);
-  letter-spacing:0.09em; text-transform:uppercase; margin-bottom:10px;
-}
-
-.select-wrap { position:relative; }
-.select-wrap select {
-  width:100%; background:var(--surface); border:1.5px solid var(--border);
-  border-radius:14px; color:var(--text); font-family:inherit;
-  font-size:16px; font-weight:600; padding:18px 48px 18px 18px;
-  cursor:pointer; outline:none; appearance:none; -webkit-appearance:none;
-  transition:border-color 0.15s,background 0.15s;
-}
-.select-wrap select:focus { border-color:var(--green); }
-.select-wrap.has-value select { border-color:var(--green); background:var(--green-bg); color:var(--green); }
-.select-arrow { position:absolute; right:18px; top:50%; transform:translateY(-50%); pointer-events:none; font-size:12px; color:var(--muted); }
-.select-wrap.has-value .select-arrow { color:var(--green); }
-
-.input-card {
-  background:var(--surface); border:1px solid var(--border);
-  border-radius:14px; overflow:hidden; transition:background 0.2s,border-color 0.2s;
-}
-.irow {
-  display:flex; align-items:center; min-height:58px; padding:0 18px; gap:12px;
-  border-bottom:1px solid var(--border); transition:background 0.1s;
-}
-.irow:last-child { border-bottom:none; }
-.irow:focus-within { background:var(--focus-bg); }
-.irow-label { font-size:15px; color:var(--muted); flex-shrink:0; min-width:90px; }
-.irow input {
-  flex:1; background:transparent; border:none; outline:none;
-  color:var(--text); font-size:17px; font-weight:500; font-family:inherit;
-  text-align:right; padding:0; min-width:0;
-  /* prevent zoom on iOS */
-  font-size:16px;
-}
-.irow input::placeholder { color:var(--faint); font-weight:400; }
-.irow-unit { font-size:14px; color:var(--faint); flex-shrink:0; margin-left:4px; }
-
-.price-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.price-card {
-  background:var(--surface); border:1px solid var(--border); border-radius:14px;
-  padding:14px 16px 16px; transition:background 0.1s,border-color 0.2s;
-}
-.price-card:focus-within { background:var(--focus-bg); }
-.price-card-label {
-  font-size:11px; font-weight:700; letter-spacing:0.08em;
-  text-transform:uppercase; margin-bottom:8px; color:var(--muted);
-}
-.price-card-label.sl { color:var(--red); }
-.price-card input {
-  width:100%; background:transparent; border:none; outline:none;
-  color:var(--text); font-size:20px; font-weight:600; font-family:inherit; padding:0;
-}
-.price-card input::placeholder { color:var(--faint); font-weight:400; font-size:18px; }
-
-.calc-btn {
-  width:100%; background:var(--green); color:#000; font-family:inherit;
-  font-size:17px; font-weight:700; padding:18px; border:none; border-radius:14px;
-  cursor:pointer; touch-action:manipulation; transition:opacity 0.12s,transform 0.08s;
-}
-[data-theme="light"] .calc-btn { color:#fff; }
-.calc-btn:active { opacity:0.82; transform:scale(0.98); }
-
-.error-bar {
-  background:var(--red-bg); border:1px solid var(--red-br); border-radius:10px;
-  padding:14px 16px; font-size:14px; color:var(--red);
-  display:none; align-items:center; gap:10px;
-}
-.error-bar.show { display:flex; }
-
-.result-card {
-  background:var(--surface); border:1px solid var(--border); border-radius:14px;
-  overflow:hidden; display:none; transition:background 0.2s,border-color 0.2s;
-}
-.result-card.show { display:block; animation:popIn 0.28s cubic-bezier(0.34,1.4,0.64,1); }
-@keyframes popIn { from{opacity:0;transform:scale(0.95) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
-
-.res-hero {
-  padding:22px 20px 18px; display:flex; justify-content:space-between; align-items:flex-start;
-  border-bottom:1px solid var(--border); background:var(--green-bg); transition:background 0.2s;
-}
-.res-label { font-size:11px; font-weight:700; color:var(--faint); letter-spacing:0.09em; text-transform:uppercase; margin-bottom:6px; }
-.res-big { font-size:56px; font-weight:800; color:var(--green); letter-spacing:-3px; line-height:1; }
-.res-unit { font-size:20px; color:var(--green); opacity:0.5; margin-left:3px; }
-.res-badge {
-  background:var(--yellow-bg); border:1px solid var(--yellow-br);
-  border-radius:12px; padding:12px 16px; text-align:right; flex-shrink:0;
-}
-.res-badge-label { font-size:10px; font-weight:700; color:var(--faint); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:4px; }
-.res-badge-val { font-size:24px; font-weight:800; color:var(--yellow); letter-spacing:-0.5px; }
-
-.comp-section { border-bottom:1px solid var(--border); padding:16px 20px; display:none; }
-.comp-section.show { display:block; }
-.comp-title { font-size:11px; font-weight:700; color:var(--faint); letter-spacing:0.09em; text-transform:uppercase; margin-bottom:10px; }
-.comp-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.comp-card { border-radius:10px; border:1.5px solid var(--border); padding:12px 14px; background:var(--bg); transition:border-color 0.15s,background 0.2s; }
-.comp-card.best { border-color:var(--green); background:var(--green-bg); }
-.comp-card-tag { font-size:10px; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; color:var(--faint); margin-bottom:6px; }
-.comp-card.best .comp-card-tag { color:var(--green); }
-.comp-lot { font-size:26px; font-weight:800; color:var(--text); letter-spacing:-1px; line-height:1; }
-.comp-card.best .comp-lot { color:var(--green); }
-.comp-unit { font-size:13px; color:var(--muted); margin-left:2px; }
-.comp-risk { font-size:13px; color:var(--muted); margin-top:5px; }
-.comp-risk strong { color:var(--text); font-weight:600; }
-.comp-card.best .comp-risk strong { color:var(--green); }
-.comp-diff { font-size:11px; color:var(--faint); margin-top:3px; }
-.comp-best-badge { display:inline-block; background:var(--green); color:#000; font-size:9px; font-weight:800; letter-spacing:0.07em; text-transform:uppercase; padding:2px 7px; border-radius:20px; margin-bottom:6px; }
-[data-theme="light"] .comp-best-badge { color:#fff; }
-
-.res-rows {}
-.res-row { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1px solid var(--border); }
-.res-row:last-child { border-bottom:none; }
-.res-row-k { font-size:14px; color:var(--muted); }
-.res-row-v { font-size:14px; font-weight:600; color:var(--text); text-align:right; max-width:55%; }
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:16px;background:var(--bg);transition:background .2s}
+body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0);transition:background .2s,color .2s}
+/* header */
+.app-header{padding:14px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);position:sticky;top:0;z-index:10;transition:background .2s,border-color .2s}
+.header-logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:32px;height:32px;border-radius:8px;background:var(--green-bg);border:1.5px solid var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-icon svg{width:18px;height:18px}
+.header-text .title{font-size:17px;font-weight:700;letter-spacing:-.4px}
+.header-text .sub{font-size:11px;color:var(--muted);margin-top:1px}
+.header-actions{display:flex;align-items:center;gap:8px}
+.theme-toggle{width:44px;height:26px;background:var(--toggle-bg);border:1px solid var(--border);border-radius:13px;cursor:pointer;position:relative;flex-shrink:0;touch-action:manipulation}
+.theme-toggle-knob{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:var(--text);transition:transform .2s;display:flex;align-items:center;justify-content:center;font-size:11px}
+[data-theme="light"] .theme-toggle-knob{transform:translateX(18px)}
+.reset-btn{background:var(--surface2);border:none;color:var(--muted);font-size:13px;font-family:inherit;padding:7px 14px;border-radius:20px;cursor:pointer;min-height:34px;touch-action:manipulation}
+.reset-btn:active{background:var(--border);color:var(--text)}
+/* nav */
+.nav-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:57px;z-index:9}
+.nav-tab{flex:1;padding:11px 0;font-size:13px;font-weight:600;color:var(--muted);text-align:center;cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;text-decoration:none}
+.nav-tab.active{color:var(--green);border-bottom-color:var(--green)}
+/* scroll body */
+.scroll-body{flex:1;padding:20px 16px 40px;display:flex;flex-direction:column;gap:20px;max-width:560px;width:100%;margin:0 auto}
+.section-label{font-size:11px;font-weight:700;color:var(--faint);letter-spacing:.09em;text-transform:uppercase;margin-bottom:10px}
+/* select */
+.select-wrap{position:relative}
+.select-wrap select{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;color:var(--text);font-family:inherit;font-size:16px;font-weight:600;padding:18px 48px 18px 18px;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;transition:border-color .15s,background .15s}
+.select-wrap select:focus{border-color:var(--green)}
+.select-wrap.has-value select{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+.select-arrow{position:absolute;right:18px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:12px;color:var(--muted)}
+.select-wrap.has-value .select-arrow{color:var(--green)}
+/* inputs */
+.input-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:background .2s,border-color .2s}
+.irow{display:flex;align-items:center;min-height:58px;padding:0 18px;gap:12px;border-bottom:1px solid var(--border);transition:background .1s}
+.irow:last-child{border-bottom:none}
+.irow:focus-within{background:var(--focus-bg)}
+.irow-label{font-size:15px;color:var(--muted);flex-shrink:0;min-width:120px}
+.irow input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:16px;font-weight:500;font-family:inherit;text-align:right;padding:0;min-width:0}
+.irow input::placeholder{color:var(--faint);font-weight:400}
+.irow-unit{font-size:14px;color:var(--faint);flex-shrink:0;margin-left:4px}
+/* price pair */
+.price-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.price-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px 16px;transition:background .1s}
+.price-card:focus-within{background:var(--focus-bg)}
+.price-card-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;color:var(--muted)}
+.price-card-label.sl{color:var(--red)}
+.price-card input{width:100%;background:transparent;border:none;outline:none;color:var(--text);font-size:20px;font-weight:600;font-family:inherit;padding:0}
+.price-card input::placeholder{color:var(--faint);font-weight:400;font-size:18px}
+/* fx status */
+.fx-status{font-size:11px;color:var(--faint);text-align:center;padding:4px 0 0}
+.fx-status.loaded{color:var(--green)}
+.fx-status.error{color:var(--red)}
+/* button */
+.calc-btn{width:100%;background:var(--green);color:#000;font-family:inherit;font-size:17px;font-weight:700;padding:18px;border:none;border-radius:14px;cursor:pointer;touch-action:manipulation;transition:opacity .12s,transform .08s}
+[data-theme="light"] .calc-btn{color:#fff}
+.calc-btn:active{opacity:.82;transform:scale(.98)}
+/* error */
+.error-bar{background:var(--red-bg);border:1px solid var(--red-br);border-radius:10px;padding:14px 16px;font-size:14px;color:var(--red);display:none;align-items:center;gap:10px}
+.error-bar.show{display:flex}
+/* result */
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:none;transition:background .2s,border-color .2s}
+.result-card.show{display:block;animation:popIn .28s cubic-bezier(.34,1.4,.64,1)}
+@keyframes popIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.res-hero{padding:22px 20px 18px;display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid var(--border);background:var(--green-bg)}
+.res-label{font-size:11px;font-weight:700;color:var(--faint);letter-spacing:.09em;text-transform:uppercase;margin-bottom:6px}
+.res-big{font-size:56px;font-weight:800;color:var(--green);letter-spacing:-3px;line-height:1}
+.res-unit{font-size:20px;color:var(--green);opacity:.5;margin-left:3px}
+.res-badge{background:var(--yellow-bg);border:1px solid var(--yellow-br);border-radius:12px;padding:12px 16px;text-align:right;flex-shrink:0}
+.res-badge-label{font-size:10px;font-weight:700;color:var(--faint);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.res-badge-val{font-size:24px;font-weight:800;color:var(--yellow);letter-spacing:-.5px}
+.comp-section{border-bottom:1px solid var(--border);padding:16px 20px;display:none}
+.comp-section.show{display:block}
+.comp-title{font-size:11px;font-weight:700;color:var(--faint);letter-spacing:.09em;text-transform:uppercase;margin-bottom:10px}
+.comp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.comp-card{border-radius:10px;border:1.5px solid var(--border);padding:12px 14px;background:var(--bg);transition:border-color .15s,background .2s}
+.comp-card.best{border-color:var(--green);background:var(--green-bg)}
+.comp-card-tag{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
+.comp-card.best .comp-card-tag{color:var(--green)}
+.comp-lot{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-1px;line-height:1}
+.comp-card.best .comp-lot{color:var(--green)}
+.comp-unit{font-size:13px;color:var(--muted);margin-left:2px}
+.comp-risk{font-size:13px;color:var(--muted);margin-top:5px}
+.comp-risk strong{color:var(--text);font-weight:600}
+.comp-card.best .comp-risk strong{color:var(--green)}
+.comp-diff{font-size:11px;color:var(--faint);margin-top:3px}
+.comp-best-badge{display:inline-block;background:var(--green);color:#000;font-size:9px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;padding:2px 7px;border-radius:20px;margin-bottom:6px}
+[data-theme="light"] .comp-best-badge{color:#fff}
+.res-rows{}
+.res-row{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border)}
+.res-row:last-child{border-bottom:none}
+.res-row-k{font-size:14px;color:var(--muted)}
+.res-row-v{font-size:14px;font-weight:600;color:var(--text);text-align:right;max-width:60%}
+.res-row-v.highlight{color:var(--green)}
 </style>
 </head>
 <body>
-
 <div class="app-header">
-  <div class="header-text">
-    <div class="title">Lot Calculator</div>
-    <div class="sub">position sizing &amp; risk management</div>
+  <div class="header-logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="1,13 5,8 8,11 12,4 17,7" stroke="#4ade80" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="17" cy="7" r="1.5" fill="#4ade80"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <div class="title">Trading Dashboard</div>
+      <div class="sub">position sizing · risk management</div>
+    </div>
   </div>
   <div class="header-actions">
-    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Cambia tema">
+    <button class="theme-toggle" onclick="toggleTheme()">
       <div class="theme-toggle-knob"><span id="theme-icon">☀️</span></div>
     </button>
     <button class="reset-btn" onclick="resetAll()">Reset</button>
   </div>
 </div>
-
 <div class="nav-tabs">
   <a class="nav-tab active" href="index.html">Calcolatore</a>
   <a class="nav-tab" href="calendar.html">Calendario</a>
 </div>
-
 <div class="scroll-body">
-
+  <!-- STRUMENTO -->
   <div>
     <div class="section-label">Strumento</div>
     <div class="select-wrap" id="select-wrap">
@@ -232,63 +159,67 @@ body {
         </optgroup>
         <optgroup label="Commodities">
           <option value="XAUUSD">XAUUSD — Gold / USD</option>
-          <option value="USOIL">USOIL.CASH — Crude Oil</option>
+          <option value="USOIL">USOIL — Crude Oil</option>
         </optgroup>
         <optgroup label="Crypto">
           <option value="BTCUSD">BTCUSD — Bitcoin / USD</option>
         </optgroup>
         <optgroup label="Indici">
-          <option value="US500">US500.CASH — S&P 500</option>
-          <option value="US100">US100.CASH — Nasdaq 100</option>
-          <option value="GER40">GER40.CASH — DAX 40</option>
+          <option value="US500">US500 — S&amp;P 500</option>
+          <option value="US100">US100 — Nasdaq 100</option>
+          <option value="GER40">GER40 — DAX 40</option>
         </optgroup>
       </select>
       <span class="select-arrow">▼</span>
     </div>
   </div>
-
+  <!-- CONTO E RISCHIO -->
   <div>
     <div class="section-label">Conto e rischio</div>
     <div class="input-card">
       <div class="irow">
         <label class="irow-label" for="capital">Capitale</label>
-        <input id="capital" type="text" inputmode="decimal" placeholder="10000" autocomplete="off" autocorrect="off" spellcheck="false" oninput="this.value=this.value.replace(',','.')">
+        <input id="capital" type="text" inputmode="decimal" placeholder="10000"
+               autocomplete="off" oninput="this.value=this.value.replace(',','.')">
         <span class="irow-unit">USD</span>
       </div>
       <div class="irow">
         <label class="irow-label" for="risk">Rischio</label>
-        <input id="risk" type="text" inputmode="decimal" placeholder="1.00" autocomplete="off" autocorrect="off" spellcheck="false" oninput="this.value=this.value.replace(',','.')">
+        <input id="risk" type="text" inputmode="decimal" placeholder="1.00"
+               autocomplete="off" oninput="this.value=this.value.replace(',','.')">
         <span class="irow-unit">%</span>
       </div>
       <div class="irow">
         <label class="irow-label" for="contractsize">Contract Size</label>
-        <input id="contractsize" type="text" inputmode="decimal" placeholder="1" autocomplete="off" autocorrect="off" spellcheck="false" oninput="this.value=this.value.replace(',','.')">
-        <span class="irow-unit" id="cs-unit">/ lot</span>
+        <input id="contractsize" type="text" inputmode="decimal" placeholder="1"
+               autocomplete="off" oninput="this.value=this.value.replace(',','.')">
+        <span class="irow-unit">/ lot</span>
       </div>
     </div>
   </div>
-
+  <!-- PREZZI -->
   <div>
     <div class="section-label">Prezzi</div>
     <div class="price-pair">
       <div class="price-card">
         <div class="price-card-label">Entry</div>
-        <input id="entry" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off" autocorrect="off" spellcheck="false" oninput="this.value=this.value.replace(',','.')">
+        <input id="entry" type="text" inputmode="decimal" placeholder="0.00"
+               autocomplete="off" oninput="this.value=this.value.replace(',','.')">
       </div>
       <div class="price-card">
         <div class="price-card-label sl">SL / Exit</div>
-        <input id="exitp" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off" autocorrect="off" spellcheck="false" oninput="this.value=this.value.replace(',','.')">
+        <input id="exitp" type="text" inputmode="decimal" placeholder="0.00"
+               autocomplete="off" oninput="this.value=this.value.replace(',','.')">
       </div>
     </div>
   </div>
-
+  <div class="fx-status" id="fx-status">Caricamento tassi di cambio…</div>
   <button class="calc-btn" onclick="calculate()">Calcola lottaggio</button>
-
   <div class="error-bar" id="err-bar">
-    <span style="font-size:16px;flex-shrink:0;">⚠</span>
+    <span style="font-size:16px;flex-shrink:0">⚠</span>
     <span id="err-msg"></span>
   </div>
-
+  <!-- RESULT -->
   <div class="result-card" id="res-card">
     <div class="res-hero">
       <div>
@@ -320,214 +251,212 @@ body {
     <div class="res-rows">
       <div class="res-row"><span class="res-row-k">Strumento</span><span class="res-row-v" id="r-instr">—</span></div>
       <div class="res-row"><span class="res-row-k">Distanza SL</span><span class="res-row-v" id="r-pips">—</span></div>
-      <div class="res-row"><span class="res-row-k">Valore punto / lot</span><span class="res-row-v" id="r-pipval">—</span></div>
       <div class="res-row"><span class="res-row-k">Contract Size</span><span class="res-row-v" id="r-contract">—</span></div>
-      <div class="res-row" id="r-fx-row" style="display:none"><span class="res-row-k">Cambio applicato</span><span class="res-row-v" id="r-fx">—</span></div>
+      <div class="res-row"><span class="res-row-k">Valore punto / lot</span><span class="res-row-v res-row-v highlight" id="r-pipval">—</span></div>
+      <div class="res-row" id="r-fx-row" style="display:none">
+        <span class="res-row-k">Cambio applicato</span>
+        <span class="res-row-v" id="r-fx">—</span>
+      </div>
     </div>
   </div>
-
 </div>
-
 <script>
-
-
 // ── Theme ──
-let _t = 'dark';
-try { _t = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme:light)').matches ? 'light' : 'dark'); } catch(e) {}
+var _t='dark';
+try{_t=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark')}catch(e){}
 setTheme(_t);
-function setTheme(t) {
-  document.documentElement.setAttribute('data-theme', t);
-  document.getElementById('theme-icon').textContent = t==='dark' ? '☀️' : '🌙';
-  const m = document.getElementById('theme-meta');
-  if(m) m.setAttribute('content', t==='dark' ? '#0c0c0c' : '#f2f2f7');
-  try { localStorage.setItem('theme', t); } catch(e) {}
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  document.getElementById('theme-icon').textContent=t==='dark'?'☀️':'🌙';
+  try{document.getElementById('theme-meta').setAttribute('content',t==='dark'?'#0c0c0c':'#f2f2f7')}catch(e){}
+  try{localStorage.setItem('theme',t)}catch(e){}
 }
-function toggleTheme() { setTheme(document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark'); }
+function toggleTheme(){setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark')}
 
 // ── Instrument config ──
-// quoteCurrency: the currency in which 1 pip/point is denominated
-// If quoteCurrency !== 'USD', we need FX conversion to get USD value
-const CFG = {
-  EURUSD: { name:'EURUSD', label:'Euro / USD',    defaultCS:100000, pipSize:0.0001, pointValuePerLotPerUnit:10,  quoteCurrency:'USD', precise:true  },
-  AUDJPY: { name:'AUDJPY', label:'AUD / JPY',     defaultCS:100000, pipSize:0.01,   pointValuePerLotPerUnit:10,  quoteCurrency:'JPY', precise:true  },
-  EURGBP: { name:'EURGBP', label:'Euro / GBP',    defaultCS:100000, pipSize:0.0001, pointValuePerLotPerUnit:10,  quoteCurrency:'GBP', precise:true  },
-  XAUUSD: { name:'XAUUSD', label:'Gold',          defaultCS:100,    pipSize:0.01,   pointValuePerLotPerUnit:1,   quoteCurrency:'USD', precise:false },
-  USOIL:  { name:'USOIL.CASH', label:'Crude Oil', defaultCS:100,    pipSize:0.01,   pointValuePerLotPerUnit:1,   quoteCurrency:'USD', precise:false },
-  BTCUSD: { name:'BTCUSD', label:'Bitcoin',       defaultCS:1,      pipSize:1,      pointValuePerLotPerUnit:1,   quoteCurrency:'USD', precise:true  },
-  US500:  { name:'US500.CASH', label:'S&P 500',   defaultCS:1,      pipSize:0.1,    pointValuePerLotPerUnit:1,   quoteCurrency:'USD', precise:true  },
-  US100:  { name:'US100.CASH', label:'Nasdaq 100',defaultCS:1,      pipSize:0.1,    pointValuePerLotPerUnit:1,   quoteCurrency:'USD', precise:true  },
-  GER40:  { name:'GER40.CASH', label:'DAX 40',    defaultCS:1,      pipSize:0.1,    pointValuePerLotPerUnit:1,   quoteCurrency:'EUR', precise:true  },
+// quoteCurrency: currency in which 1 pip/point gain is expressed before converting to USD
+// pipSize: minimum price movement
+// defaultCS: default contract size (units per lot)
+// precise: true = round to nearest 0.01, false = show comparison
+var CFG = {
+  EURUSD:{name:'EURUSD',label:'Euro/USD',   quoteCurrency:'USD',pipSize:0.0001,defaultCS:100000,precise:true},
+  AUDJPY:{name:'AUDJPY',label:'AUD/JPY',    quoteCurrency:'JPY',pipSize:0.01,  defaultCS:100000,precise:true},
+  EURGBP:{name:'EURGBP',label:'Euro/GBP',   quoteCurrency:'GBP',pipSize:0.0001,defaultCS:100000,precise:true},
+  XAUUSD:{name:'XAUUSD',label:'Gold',       quoteCurrency:'USD',pipSize:0.01,  defaultCS:100,   precise:false},
+  USOIL: {name:'USOIL', label:'Crude Oil',  quoteCurrency:'USD',pipSize:0.01,  defaultCS:100,   precise:false},
+  BTCUSD:{name:'BTCUSD',label:'Bitcoin',    quoteCurrency:'USD',pipSize:1,     defaultCS:1,     precise:true},
+  US500: {name:'US500', label:'S&P 500',    quoteCurrency:'USD',pipSize:0.1,   defaultCS:1,     precise:true},
+  US100: {name:'US100', label:'Nasdaq 100', quoteCurrency:'USD',pipSize:0.1,   defaultCS:1,     precise:true},
+  GER40: {name:'GER40', label:'DAX 40',     quoteCurrency:'EUR',pipSize:0.1,   defaultCS:1,     precise:true},
 };
 
-// FX rates cache: rates vs USD (base=USD)
-let fxRates = {};
-let fxLoaded = false;
+// ── FX rates (base = USD) ──
+var fxRates = {};
+var fxLoaded = false;
 
-async function loadFxRates() {
-  try {
-    const res = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
+(async function loadFX(){
+  var statusEl = document.getElementById('fx-status');
+  try{
+    var res = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    var data = await res.json();
     fxRates = data.rates || {};
     fxLoaded = true;
-  } catch(e) {
-    console.warn('FX rates load failed:', e.message);
-    fxRates = {};
+    statusEl.textContent = 'Tassi aggiornati (' + new Date().toLocaleTimeString(navigator.language,{hour:'2-digit',minute:'2-digit'}) + ')';
+    statusEl.className = 'fx-status loaded';
+  }catch(e){
     fxLoaded = false;
+    statusEl.textContent = 'Tassi non disponibili — calcolo con 1:1';
+    statusEl.className = 'fx-status error';
   }
-}
-loadFxRates();
+})();
 
-// Convert 1 unit of `currency` to USD
-function toUSD(currency) {
-  if (currency === 'USD') return 1;
-  if (!fxLoaded || !fxRates[currency]) {
-    console.warn('No FX rate for', currency, '— defaulting to 1');
-    return 1;
-  }
-  // fxRates[X] = how many X per 1 USD → to get USD per X: 1/rate
-  return 1 / fxRates[currency];
+// Convert 1 unit of quoteCurrency → USD
+function toUSD(currency){
+  if(currency==='USD') return {rate:1,label:null};
+  if(!fxLoaded||!fxRates[currency]) return {rate:1,label:'(stima 1:1)'};
+  var rate = 1/fxRates[currency];
+  return {rate:rate, label:'1 '+currency+' = $'+rate.toFixed(5).replace(/\.?0+$/,'')};
 }
 
-// ── Instrument select: update contract size default ──
-function pickInstr(key) {
-  instrKey = key || null;
-  const wrap = document.getElementById('select-wrap');
-  if (key) wrap.classList.add('has-value');
-  else wrap.classList.remove('has-value');
+// ── State ──
+var instrKey = null;
 
-  if (key && CFG[key]) {
-    const c = CFG[key];
-    document.getElementById('contractsize').value = c.defaultCS;
-    document.getElementById('cs-unit').textContent = '/ lot';
+function pickInstr(key){
+  instrKey = key||null;
+  var wrap = document.getElementById('select-wrap');
+  if(key){ wrap.classList.add('has-value'); }
+  else   { wrap.classList.remove('has-value'); }
+  if(key && CFG[key]){
+    document.getElementById('contractsize').value = CFG[key].defaultCS;
   }
 }
 
-function getVal(id) {
-  return parseFloat(document.getElementById(id).value);
-}
+function getVal(id){return parseFloat(document.getElementById(id).value)||0}
 
-function showErr(m) {
-  document.getElementById('err-msg').textContent = m;
+function showErr(m){
+  document.getElementById('err-msg').textContent=m;
   document.getElementById('err-bar').classList.add('show');
 }
 
-function calculate() {
+function calculate(){
   document.getElementById('err-bar').classList.remove('show');
   document.getElementById('res-card').classList.remove('show');
 
-  const capital      = getVal('capital');
-  const riskPct      = getVal('risk');
-  const entry        = getVal('entry');
-  const exitP        = getVal('exitp');
-  const contractSize = getVal('contractsize') || (instrKey && CFG[instrKey] ? CFG[instrKey].defaultCS : 1);
+  if(!instrKey)          return showErr('Seleziona uno strumento.');
+  var capital      = getVal('capital');
+  var riskPct      = getVal('risk');
+  var entry        = getVal('entry');
+  var exitP        = getVal('exitp');
+  var contractSize = getVal('contractsize');
 
-  if (!instrKey)              return showErr('Seleziona uno strumento.');
-  if (!capital || capital<=0) return showErr('Inserisci un capitale valido.');
-  if (!riskPct || riskPct<=0) return showErr('Inserisci un risk % valido (es. 1.00).');
-  if (!entry   || entry<=0)   return showErr('Inserisci un entry price.');
-  if (!exitP   || exitP<=0)   return showErr('Inserisci uno SL / exit price.');
-  if (entry === exitP)        return showErr('Entry e SL non possono coincidere.');
-  if (!contractSize || contractSize<=0) return showErr('Contract size non valida.');
+  if(!capital||capital<=0)      return showErr('Inserisci un capitale valido.');
+  if(!riskPct||riskPct<=0)      return showErr('Inserisci un risk % valido.');
+  if(!entry||entry<=0)          return showErr('Inserisci un entry price.');
+  if(!exitP||exitP<=0)          return showErr('Inserisci uno SL / exit price.');
+  if(entry===exitP)             return showErr('Entry e SL non possono coincidere.');
+  if(!contractSize||contractSize<=0) return showErr('Contract size non valida.');
 
-  const c       = CFG[instrKey];
-  const target  = capital * riskPct / 100;
-  const pDiff   = Math.abs(entry - exitP);
+  var c       = CFG[instrKey];
+  var target  = capital*riskPct/100;   // USD risk amount
+  var pDiff   = Math.abs(entry-exitP); // price distance
 
-  // FX conversion: if quote currency is not USD, convert point value to USD
-  const fxRate     = toUSD(c.quoteCurrency);           // USD per 1 quote currency unit
-  const fxApplied  = c.quoteCurrency !== 'USD';
+  // FX conversion
+  var fx = toUSD(c.quoteCurrency);
 
-  // Point value per lot in account currency (USD):
-  // For forex: 1 pip move on contractSize units = contractSize * pipSize * fxRate USD per lot
-  // For everything else: 1 point move on contractSize units = contractSize * pipSize * fxRate
-  // Generalised: pointValuePerLot = contractSize * pipSize * fxRate
-  const pointValuePerLot = contractSize * c.pipSize * fxRate;  // USD per pip/point per lot
+  // Point value per lot in USD:
+  // 1 pip move × contractSize units × fx rate = USD gain per pip per lot
+  // For forex pairs: 1 pip on 100,000 units of quote currency = 100,000 × 0.0001 = 10 quote currency
+  // e.g. EURUSD: 10 USD. EURGBP: 10 GBP → convert to USD.
+  // General formula: pipValuePerLot = contractSize × pipSize × fx.rate
+  var pipValuePerLot = contractSize * c.pipSize * fx.rate; // USD per pip per lot
 
   // pip distance
-  const pipDist = pDiff / c.pipSize;
+  var pipDist = pDiff / c.pipSize;
 
-  // raw lots: target = lots * pipDist * pointValuePerLot
-  const lotsRaw = target / (pipDist * pointValuePerLot);
+  // Formula: lots = target / (pipDist × pipValuePerLot)
+  var lotsRaw = target / (pipDist * pipValuePerLot);
 
   // Rounding
-  let bestLots, bestRisk;
-  const compSection = document.getElementById('comp-section');
+  var bestLots, bestRisk;
+  var calcRisk = function(l){ return l * pipDist * pipValuePerLot; };
+  var compSection = document.getElementById('comp-section');
 
-  const calcRisk = (lots) => lots * pipDist * pointValuePerLot;
-
-  if (c.precise) {
-    bestLots = Math.round(lotsRaw * 100) / 100;
+  if(c.precise){
+    bestLots = Math.round(lotsRaw*100)/100;
     bestRisk = calcRisk(bestLots);
     compSection.classList.remove('show');
   } else {
-    const step = 0.01;
-    const ld = +(Math.floor(lotsRaw / step) * step).toFixed(4);
-    const lu = +(ld + step).toFixed(4);
-    const rd = calcRisk(ld);
-    const ru = calcRisk(lu);
-    const bestIsUp = Math.abs(ru - target) <= Math.abs(rd - target);
-    bestLots = bestIsUp ? lu : ld;
-    bestRisk = bestIsUp ? ru : rd;
+    var step = 0.01;
+    var ld = +(Math.floor(lotsRaw/step)*step).toFixed(4);
+    var lu = +(ld+step).toFixed(4);
+    var rd = calcRisk(ld), ru = calcRisk(lu);
+    var bestIsUp = Math.abs(ru-target)<=Math.abs(rd-target);
+    bestLots = bestIsUp?lu:ld;
+    bestRisk = bestIsUp?ru:rd;
 
-    const cdCard = document.getElementById('comp-down');
-    const cuCard = document.getElementById('comp-up');
+    var cdCard=document.getElementById('comp-down');
+    var cuCard=document.getElementById('comp-up');
     cdCard.classList.remove('best'); cuCard.classList.remove('best');
-    cdCard.querySelector('.comp-best-badge') && cdCard.querySelector('.comp-best-badge').remove();
-    cuCard.querySelector('.comp-best-badge') && cuCard.querySelector('.comp-best-badge').remove();
+    var b1=cdCard.querySelector('.comp-best-badge'); if(b1)b1.remove();
+    var b2=cuCard.querySelector('.comp-best-badge'); if(b2)b2.remove();
 
-    document.getElementById('cd-lot').textContent  = ld.toFixed(2);
-    document.getElementById('cd-risk').textContent = '$' + rd.toFixed(2);
-    document.getElementById('cd-diff').textContent = 'Δ $' + Math.abs(rd - target).toFixed(2) + ' dal target';
-    document.getElementById('cu-lot').textContent  = lu.toFixed(2);
-    document.getElementById('cu-risk').textContent = '$' + ru.toFixed(2);
-    document.getElementById('cu-diff').textContent = 'Δ $' + Math.abs(ru - target).toFixed(2) + ' dal target';
+    document.getElementById('cd-lot').textContent=ld.toFixed(2);
+    document.getElementById('cd-risk').textContent='$'+rd.toFixed(2);
+    document.getElementById('cd-diff').textContent='Δ $'+Math.abs(rd-target).toFixed(2)+' dal target';
+    document.getElementById('cu-lot').textContent=lu.toFixed(2);
+    document.getElementById('cu-risk').textContent='$'+ru.toFixed(2);
+    document.getElementById('cu-diff').textContent='Δ $'+Math.abs(ru-target).toFixed(2)+' dal target';
 
-    const bestCard = bestIsUp ? cuCard : cdCard;
+    var bestCard=bestIsUp?cuCard:cdCard;
     bestCard.classList.add('best');
-    const badge = document.createElement('div');
-    badge.className = 'comp-best-badge'; badge.textContent = 'Consigliato';
-    bestCard.insertBefore(badge, bestCard.firstChild);
+    var badge=document.createElement('div');
+    badge.className='comp-best-badge';badge.textContent='Consigliato';
+    bestCard.insertBefore(badge,bestCard.firstChild);
     compSection.classList.add('show');
   }
 
-  // Display
-  const pipValTxt  = '$' + pointValuePerLot.toFixed(4).replace(/\.?0+$/, '') + ' / pip per lot';
-  const pipDistTxt = pipDist.toFixed(c.pipSize <= 0.01 ? 0 : 1)
-    + ' pip  ($' + pDiff.toFixed(c.pipSize < 0.001 ? 5 : 2) + ')';
+  // Pip distance display
+  var decimals = c.pipSize<=0.0001?5:c.pipSize<=0.01?2:1;
+  var pipDistTxt = pipDist.toFixed(0)+' pip  (Δ '+pDiff.toFixed(decimals)+')';
 
-  document.getElementById('res-lot').textContent   = bestLots.toFixed(2);
-  document.getElementById('res-risk').textContent  = '$' + bestRisk.toFixed(2);
-  document.getElementById('r-instr').textContent   = c.name + ' — ' + c.label;
-  document.getElementById('r-pips').textContent    = pipDistTxt;
-  document.getElementById('r-pipval').textContent  = pipValTxt;
-  document.getElementById('r-contract').textContent= contractSize + ' / lot';
+  // Point value display
+  var pipValTxt = '$'+pipValuePerLot.toFixed(pipValuePerLot<1?4:2)+' / pip per lot';
 
-  const fxRow = document.getElementById('r-fx-row');
-  if (fxApplied) {
-    document.getElementById('r-fx').textContent =
-      '1 ' + c.quoteCurrency + ' = $' + fxRate.toFixed(4) + (fxLoaded ? '' : ' (stimato)');
-    fxRow.style.display = '';
+  document.getElementById('res-lot').textContent  = bestLots.toFixed(2);
+  document.getElementById('res-risk').textContent = '$'+bestRisk.toFixed(2);
+  document.getElementById('r-instr').textContent  = c.name+' — '+c.label;
+  document.getElementById('r-pips').textContent   = pipDistTxt;
+  document.getElementById('r-contract').textContent = contractSize+' / lot';
+  document.getElementById('r-pipval').textContent = pipValTxt;
+
+  var fxRow = document.getElementById('r-fx-row');
+  if(fx.label){
+    document.getElementById('r-fx').textContent = fx.label;
+    fxRow.style.display='';
   } else {
-    fxRow.style.display = 'none';
+    fxRow.style.display='none';
   }
 
   document.getElementById('res-card').classList.add('show');
-  setTimeout(() => document.getElementById('res-card').scrollIntoView({behavior:'smooth', block:'nearest'}), 80);
+  setTimeout(function(){
+    document.getElementById('res-card').scrollIntoView({behavior:'smooth',block:'nearest'});
+  },80);
 }
 
-function resetAll() {
+function resetAll(){
   instrKey=null;
-  document.querySelectorAll('.instr-tile').forEach(t=>t.classList.remove('active'));
-  ['capital','risk','entry','exitp','contractsize'].forEach(id=>{ document.getElementById(id).value=''; });
   document.getElementById('instrument').value='';
   document.getElementById('select-wrap').classList.remove('has-value');
+  ['capital','risk','contractsize','entry','exitp'].forEach(function(id){
+    document.getElementById(id).value='';
+  });
   document.getElementById('err-bar').classList.remove('show');
   document.getElementById('res-card').classList.remove('show');
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-document.addEventListener('keydown', e => { if(e.key==='Enter') calculate(); });
+document.addEventListener('keydown',function(e){if(e.key==='Enter')calculate();});
 if('serviceWorker' in navigator) navigator.serviceWorker.register('/lot-calc/sw.js');
 </script>
 </body>

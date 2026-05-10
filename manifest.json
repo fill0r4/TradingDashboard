@@ -1,7 +1,7 @@
 {
-  "name": "Lot Calculator",
-  "short_name": "Lot Calc",
-  "description": "Position sizing e risk management per trading",
+  "name": "Trading Dashboard",
+  "short_name": "Trading",
+  "description": "Position sizing, risk management e calendario macro",
   "start_url": "/lot-calc/",
   "scope": "/lot-calc/",
   "display": "standalone",
