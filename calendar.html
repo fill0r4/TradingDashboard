@@ -278,59 +278,66 @@ function fmtWeekLabel(mon,sun){
 }
 
 // ── TIMEZONE CONVERSION ──
-// Convert a wall-clock time expressed in America/New_York to a UTC Date.
-// Uses iterative correction via Intl — NO hardcoded offsets.
-// This handles DST transitions in both US and Europe automatically.
+// FF gives times as New York wall-clock (America/New_York).
+// Correct result: 8:30am NY (EDT=UTC-4) → 12:30 UTC → 14:30 Rome (UTC+2)
 //
-// Proof: 8:30am New York (EDT = UTC-4) → should be 12:30 UTC → 14:30 Rome (UTC+2)
-function nyWallToUtc(yr, mo, da, h, min){
-  // Start with a naive guess: treat the NY time as UTC
-  var guess = new Date(Date.UTC(yr, mo-1, da, h, min, 0, 0));
-  // Iteratively correct: ask Intl what NY time this UTC instant shows,
-  // compute the difference, shift the guess.
-  for(var i=0; i<4; i++){
-    var nyStr = new Intl.DateTimeFormat('en-US',{
-      timeZone:'America/New_York', hour12:false,
-      hour:'2-digit', minute:'2-digit'
-    }).format(guess);
-    // nyStr = "08:30" always (hour12:false + 2-digit)
-    var colon = nyStr.indexOf(':');
-    var nyH = parseInt(nyStr.substring(0,colon),10)%24;
-    var nyM = parseInt(nyStr.substring(colon+1),10);
-    var diffMin = (h*60+min)-(nyH*60+nyM);
-    if(diffMin===0) return guess;
-    guess = new Date(guess.getTime()+diffMin*60000);
-  }
-  return guess;
+// Method: measure the actual NY offset at the event date using Intl,
+// then subtract it from the naive UTC to get the real UTC instant.
+// This is a single direct calculation — no loops, no guessing.
+
+function getTimezoneOffsetMinutes(tz, utcDate) {
+  // Returns offset in minutes such that: localTime = UTC + offset
+  // e.g. America/New_York EDT (UTC-4) returns -240
+  var fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz, hour12: false,
+    year:'numeric', month:'2-digit', day:'2-digit',
+    hour:'2-digit', minute:'2-digit', second:'2-digit'
+  });
+  var parts = fmt.formatToParts(utcDate);
+  function p(t){ return parseInt(parts.find(function(x){return x.type===t;}).value,10); }
+  var localAsUTC = Date.UTC(p('year'), p('month')-1, p('day'), p('hour')%24, p('minute'), p('second'));
+  return (localAsUTC - utcDate.getTime()) / 60000;
 }
 
-function parseFFTime(dateStr, timeStr){
-  try{
-    var ts=(timeStr||'').trim();
-    if(!ts||ts==='All Day'||ts==='Tentative') return {utcDate:null,isAllDay:true};
-    var dp=(dateStr||'').split('-');
-    if(dp.length!==3) return {utcDate:null,isAllDay:false};
+function parseFFTime(dateStr, timeStr) {
+  try {
+    var ts = (timeStr||'').trim();
+    if (!ts || ts==='All Day' || ts==='Tentative') return {utcDate:null, isAllDay:true};
+    var dp = (dateStr||'').split('-');
+    if (dp.length!==3) return {utcDate:null, isAllDay:false};
     var mo=parseInt(dp[0],10), da=parseInt(dp[1],10), yr=parseInt(dp[2],10);
-    if(isNaN(mo)||isNaN(da)||isNaN(yr)) return {utcDate:null,isAllDay:false};
-    var tm=ts.match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/i);
-    if(!tm) return {utcDate:null,isAllDay:false};
+    if (isNaN(mo)||isNaN(da)||isNaN(yr)) return {utcDate:null, isAllDay:false};
+    var tm = ts.match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/i);
+    if (!tm) return {utcDate:null, isAllDay:false};
     var h=parseInt(tm[1],10), min=parseInt(tm[2],10), ap=tm[3].toLowerCase();
-    if(ap==='pm'&&h!==12) h+=12;
-    if(ap==='am'&&h===12) h=0;
-    return {utcDate:nyWallToUtc(yr,mo,da,h,min), isAllDay:false};
-  }catch(e){ return {utcDate:null,isAllDay:false}; }
+    if (ap==='pm' && h!==12) h+=12;
+    if (ap==='am' && h===12) h=0;
+
+    // Build a probe: treat NY wall-clock as UTC (naive)
+    var probe = new Date(Date.UTC(yr, mo-1, da, h, min, 0));
+    // Get the actual NY offset at this date (handles DST automatically)
+    var nyOffset = getTimezoneOffsetMinutes('America/New_York', probe);
+    // Real UTC = naive UTC - NY offset
+    // e.g.: probe=08:30 UTC, nyOffset=-240 → utcDate=08:30-(-240min)=12:30 UTC
+    var utcDate = new Date(probe.getTime() - nyOffset*60000);
+    return {utcDate:utcDate, isAllDay:false};
+  } catch(e) {
+    console.warn('parseFFTime error:', dateStr, timeStr, e);
+    return {utcDate:null, isAllDay:false};
+  }
 }
 
-function fmtLocal(utcDate){
-  if(!utcDate||isNaN(utcDate.getTime())) return '—';
-  try{
-    return new Intl.DateTimeFormat(navigator.language||'it-IT',{
-      timeZone:USER_TZ, hour:'2-digit', minute:'2-digit', hour12:false
+function fmtLocal(utcDate) {
+  if (!utcDate || isNaN(utcDate.getTime())) return '—';
+  try {
+    return new Intl.DateTimeFormat(navigator.language||'it-IT', {
+      timeZone: USER_TZ, hour:'2-digit', minute:'2-digit', hour12:false
     }).format(utcDate);
-  }catch(e){
+  } catch(e) {
     var uh=utcDate.getUTCHours(), um=utcDate.getUTCMinutes();
     return (uh<10?'0':'')+uh+':'+(um<10?'0':'')+um;
   }
+}
 }
 
 // ── FETCH ──
@@ -506,29 +513,31 @@ var MARKETS=[
 ];
 
 // Convert h:m wall-clock in `tz` → display string in USER_TZ
-// Uses same iterative Intl trick as nyWallToUtc
-function wallToUserDisplay(tz, h, m){
-  try{
-    var now=new Date();
-    // Get today's date in the source tz
-    var dateParts=new Intl.DateTimeFormat('en-US',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now);
-    var yr=parseInt(dateParts.find(function(p){return p.type==='year';}).value,10);
-    var mo=parseInt(dateParts.find(function(p){return p.type==='month';}).value,10);
-    var da=parseInt(dateParts.find(function(p){return p.type==='day';}).value,10);
-    // Build UTC guess
-    var guess=new Date(Date.UTC(yr,mo-1,da,h,m,0,0));
-    for(var i=0;i<4;i++){
-      var shown=new Intl.DateTimeFormat('en-US',{timeZone:tz,hour12:false,hour:'2-digit',minute:'2-digit'}).format(guess);
-      var colon=shown.indexOf(':');
-      var sh=parseInt(shown.substring(0,colon),10)%24, sm=parseInt(shown.substring(colon+1),10);
-      var diff=(h*60+m)-(sh*60+sm);
-      if(diff===0) break;
-      guess=new Date(guess.getTime()+diff*60000);
-    }
-    return new Intl.DateTimeFormat(navigator.language||'it-IT',{
-      timeZone:USER_TZ,hour:'2-digit',minute:'2-digit',hour12:false
-    }).format(guess);
-  }catch(e){return h+':'+(m<10?'0':'')+m;}
+// Convert h:m wall-clock in source `tz` → display string in USER_TZ
+// Uses same direct offset measurement as parseFFTime
+function wallToUserDisplay(tz, h, m) {
+  try {
+    var now = new Date();
+    // Get today's date parts in the source tz
+    var fmt = new Intl.DateTimeFormat('en-US', {
+      timeZone:tz, year:'numeric', month:'2-digit', day:'2-digit'
+    });
+    var dp = fmt.formatToParts(now);
+    function p(t){ return parseInt(dp.find(function(x){return x.type===t;}).value,10); }
+    var yr=p('year'), mo=p('month'), da=p('day');
+    // Probe: treat the wall-clock time as UTC
+    var probe = new Date(Date.UTC(yr, mo-1, da, h, m, 0));
+    // Get the actual offset of the source tz at this date
+    var srcOffset = getTimezoneOffsetMinutes(tz, probe);
+    // Real UTC = probe - offset
+    var utcDate = new Date(probe.getTime() - srcOffset*60000);
+    // Format in user's local tz
+    return new Intl.DateTimeFormat(navigator.language||'it-IT', {
+      timeZone:USER_TZ, hour:'2-digit', minute:'2-digit', hour12:false
+    }).format(utcDate);
+  } catch(e) {
+    return (h<10?'0':'')+h+':'+(m<10?'0':'')+m;
+  }
 }
 
 function getMarketStatus(market){
