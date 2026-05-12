@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#0c0c0c" id="theme-meta">
@@ -19,7 +18,6 @@
   --blue:#60a5fa;--blue-bg:#0a1220;--blue-br:#1e3a5a;--blue-soft:#0a1418;
   --text:#e8e8e0;--muted:#777;--faint:#444;--toggle-bg:#1e1e1e;
   --past-bg:#111;--past-border:#1e1e1e;--past-text:#444;
-  --mkt-open-bg:#0f1f0f;--mkt-closed-bg:#161616;
 }
 :root[data-theme="light"]{
   --bg:#f2f2f7;--surface:#fff;--surface2:#e8e8ed;--border:#d1d1d6;
@@ -30,12 +28,11 @@
   --blue:#2563eb;--blue-bg:#eff6ff;--blue-br:#bfdbfe;--blue-soft:#f0f7ff;
   --text:#1c1c1e;--muted:#6b6b6b;--faint:#aeaeb2;--toggle-bg:#e5e5ea;
   --past-bg:#f5f5f7;--past-border:#e5e5ea;--past-text:#b0b0b8;
-  --mkt-open-bg:#f0fdf4;--mkt-closed-bg:#f5f5f7;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{font-size:16px;background:var(--bg);transition:background .2s}
 body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0);transition:background .2s,color .2s}
-.app-header{padding:14px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);position:sticky;top:0;z-index:10;transition:background .2s}
+.app-header{padding:14px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);position:sticky;top:0;z-index:10}
 .header-logo{display:flex;align-items:center;gap:10px}
 .logo-icon{width:32px;height:32px;border-radius:8px;background:var(--green-bg);border:1.5px solid var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .logo-icon svg{width:18px;height:18px}
@@ -47,11 +44,9 @@ body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;back
 .nav-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:57px;z-index:9}
 .nav-tab{flex:1;padding:11px 0;font-size:13px;font-weight:600;color:var(--muted);text-align:center;cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;text-decoration:none}
 .nav-tab.active{color:var(--green);border-bottom-color:var(--green)}
-/* section tabs */
-.section-tabs{display:flex;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:98px;z-index:8}
+.section-tabs{display:flex;gap:8px;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:98px;z-index:8}
 .stab{flex:1;padding:9px 0;border-radius:10px;font-size:13px;font-weight:600;color:var(--muted);background:var(--surface2);border:none;cursor:pointer;text-align:center;touch-action:manipulation;transition:all .15s}
 .stab.active{background:var(--green-bg);color:var(--green);border:1px solid var(--green)}
-/* controls */
 .controls-bar{padding:10px 16px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--border);background:var(--bg)}
 .week-nav{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .week-label{font-size:13px;font-weight:600;color:var(--text);text-align:center;flex:1}
@@ -62,30 +57,26 @@ body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;back
 .filter-pills{display:flex;gap:6px;flex-wrap:wrap}
 .fpill{padding:5px 11px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid;transition:all .12s;touch-action:manipulation;-webkit-user-select:none;user-select:none;opacity:.4}
 .fpill.on{opacity:1}
-.fpill-high{border-color:var(--red);color:var(--red);background:transparent}.fpill-high.on{background:var(--red-soft)}
-.fpill-medium{border-color:var(--acc);color:var(--acc);background:transparent}.fpill-medium.on{background:var(--acc-soft)}
-.fpill-low{border-color:var(--blue);color:var(--blue);background:transparent}.fpill-low.on{background:var(--blue-soft)}
+.fpill-high{border-color:var(--red);color:var(--red)}.fpill-high.on{background:var(--red-soft)}
+.fpill-medium{border-color:var(--acc);color:var(--acc)}.fpill-medium.on{background:var(--acc-soft)}
+.fpill-low{border-color:var(--blue);color:var(--blue)}.fpill-low.on{background:var(--blue-soft)}
 .cur-pills{display:flex;gap:5px;flex-wrap:wrap}
 .cpill{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);color:var(--muted);background:transparent;transition:all .12s;touch-action:manipulation;-webkit-user-select:none;user-select:none}
 .cpill.on{border-color:var(--green);color:var(--green);background:var(--green-bg)}
-/* scroll body */
 .scroll-body{flex:1;padding:16px 16px 40px;display:flex;flex-direction:column;max-width:560px;width:100%;margin:0 auto}
-.section-label{font-size:11px;font-weight:700;color:var(--faint);letter-spacing:.09em;text-transform:uppercase}
 .status-box{text-align:center;padding:48px 20px;font-size:14px;color:var(--muted)}
 .spinner{width:26px;height:26px;border:2.5px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px}
 @keyframes spin{to{transform:rotate(360deg)}}
-/* day */
 .day-group{margin-bottom:8px}
 .day-header{padding:14px 0 8px;display:flex;align-items:center;gap:8px}
 .day-name{font-size:12px;font-weight:700;color:var(--faint);letter-spacing:.09em;text-transform:uppercase}
 .day-date{font-size:13px;color:var(--muted)}
 .day-today{font-size:10px;font-weight:700;background:var(--green);color:#000;padding:2px 8px;border-radius:20px;text-transform:uppercase}
 [data-theme="light"] .day-today{color:#fff}
-/* event card */
-.event-card{border-radius:12px;padding:13px 14px;margin-bottom:7px;border:1px solid;border-left-width:3px;transition:background .2s,opacity .2s}
-.event-card.impact-High  {background:var(--red-soft); border-color:var(--red-br); border-left-color:var(--red)}
-.event-card.impact-Medium{background:var(--acc-soft); border-color:var(--acc-br); border-left-color:var(--acc)}
-.event-card.impact-Low   {background:var(--blue-soft);border-color:var(--blue-br);border-left-color:var(--blue)}
+.event-card{border-radius:12px;padding:13px 14px;margin-bottom:7px;border:1px solid;border-left-width:3px}
+.event-card.impact-High{background:var(--red-soft);border-color:var(--red-br);border-left-color:var(--red)}
+.event-card.impact-Medium{background:var(--acc-soft);border-color:var(--acc-br);border-left-color:var(--acc)}
+.event-card.impact-Low{background:var(--blue-soft);border-color:var(--blue-br);border-left-color:var(--blue)}
 .event-card.past{background:var(--past-bg)!important;border-color:var(--past-border)!important;border-left-color:var(--past-border)!important;opacity:.4}
 .event-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
 .event-time{font-size:15px;font-weight:700;letter-spacing:-.3px}
@@ -94,7 +85,6 @@ body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;back
 .impact-Low .event-time{color:var(--blue)}
 .past .event-time{color:var(--past-text)!important}
 .event-time.allday{font-size:11px;font-weight:600;color:var(--muted)}
-.event-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
 .event-currency{font-size:11px;font-weight:700;letter-spacing:.07em;padding:2px 7px;border-radius:5px}
 .impact-High .event-currency{background:var(--red-bg);color:var(--red);border:1px solid var(--red-br)}
 .impact-Medium .event-currency{background:var(--acc-bg);color:var(--acc);border:1px solid var(--acc-br)}
@@ -106,7 +96,6 @@ body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;back
 .instr-pill{font-size:11px;font-weight:600;background:var(--acc-faded-bg);color:var(--acc-faded);border:1px solid var(--acc-faded-br);padding:2px 9px;border-radius:20px}
 .instr-pill.primary{background:var(--acc-bg);color:var(--acc);border-color:var(--acc-br)}
 .past .instr-pill,.past .instr-pill.primary{background:transparent;color:var(--past-text);border-color:var(--past-border)}
-/* errors / refresh */
 .error-bar{background:var(--red-bg);border:1px solid var(--red-br);border-radius:10px;padding:14px 16px;margin-bottom:12px;font-size:14px;color:var(--red);display:none;align-items:flex-start;gap:10px}
 .error-bar.show{display:flex}
 .refresh-row{display:flex;justify-content:center;padding:12px 0}
@@ -144,7 +133,7 @@ body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;back
     </div>
     <div class="header-text">
       <div class="title">Trading Dashboard</div>
-      <div class="sub" id="tz-sub">Rilevamento fuso orario…</div>
+      <div class="sub" id="tz-sub">—</div>
     </div>
   </div>
   <button class="theme-toggle" onclick="toggleTheme()">
@@ -159,7 +148,6 @@ body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;back
   <button class="stab active" id="stab-cal"     onclick="showSection('cal')">📅 Notizie</button>
   <button class="stab"        id="stab-markets" onclick="showSection('markets')">🏛 Borse</button>
 </div>
-<!-- CALENDAR CONTROLS (only for news section) -->
 <div class="controls-bar" id="cal-controls">
   <div class="week-nav">
     <button class="week-btn" onclick="changeWeek(-1)">‹</button>
@@ -188,7 +176,6 @@ body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;back
     </div>
   </div>
 </div>
-<!-- NEWS SECTION -->
 <div id="section-cal">
   <div class="scroll-body">
     <div class="error-bar" id="err-bar">
@@ -199,7 +186,6 @@ body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;back
     <div class="refresh-row"><button class="refresh-btn" onclick="loadCalendar()">↺ Aggiorna</button></div>
   </div>
 </div>
-<!-- MARKETS SECTION -->
 <div id="section-markets" style="display:none">
   <div class="scroll-body">
     <div class="clock-bar">
@@ -210,403 +196,428 @@ body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;back
   </div>
 </div>
 <script>
-// ── USER TIMEZONE (detected once) ──
-var USER_TZ = 'UTC';
-try { USER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch(e){}
-document.getElementById('tz-sub').textContent = 'Orario: ' + USER_TZ.replace(/_/g,' ');
+'use strict';
 
-// ── THEME ──
-var _t = 'dark';
-try { _t = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme:light)').matches ? 'light' : 'dark'); } catch(e){}
-setTheme(_t);
-function setTheme(t){
-  document.documentElement.setAttribute('data-theme',t);
-  document.getElementById('theme-icon').textContent = t==='dark'?'☀️':'🌙';
-  try{document.getElementById('theme-meta').setAttribute('content',t==='dark'?'#0c0c0c':'#f2f2f7')}catch(e){}
-  try{localStorage.setItem('theme',t)}catch(e){}
+// ── 1. TIMEZONE DETECTION ──
+var USER_TZ = 'Europe/Rome'; // safe default
+try {
+  var detected = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  if (detected) USER_TZ = detected;
+} catch(e) {}
+document.getElementById('tz-sub').textContent = USER_TZ.replace(/_/g, ' ');
+
+// ── 2. THEME ──
+var _savedTheme = 'dark';
+try { _savedTheme = localStorage.getItem('theme') || _savedTheme; } catch(e) {}
+setTheme(_savedTheme);
+function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('theme-icon').textContent = t === 'dark' ? '☀️' : '🌙';
+  try { document.getElementById('theme-meta').setAttribute('content', t === 'dark' ? '#0c0c0c' : '#f2f2f7'); } catch(e) {}
+  try { localStorage.setItem('theme', t); } catch(e) {}
 }
-function toggleTheme(){ setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'); }
-
-// ── SECTION SWITCH ──
-var currentSection = 'cal';
-function showSection(sec){
-  currentSection = sec;
-  document.getElementById('section-cal').style.display     = sec==='cal'?'':'none';
-  document.getElementById('section-markets').style.display  = sec==='markets'?'':'none';
-  document.getElementById('cal-controls').style.display     = sec==='cal'?'':'none';
-  document.getElementById('stab-cal').className     = 'stab'+(sec==='cal'?' active':'');
-  document.getElementById('stab-markets').className = 'stab'+(sec==='markets'?' active':'');
-  if(sec==='markets') renderMarkets();
+function toggleTheme() {
+  setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 }
 
-// ── FILTER STATE ──
-var activeImpacts    = {High:true, Medium:false, Low:false};
+// ── 3. SECTION SWITCH ──
+var _mktInterval = null;
+function showSection(sec) {
+  document.getElementById('section-cal').style.display     = sec === 'cal'     ? '' : 'none';
+  document.getElementById('section-markets').style.display = sec === 'markets' ? '' : 'none';
+  document.getElementById('cal-controls').style.display    = sec === 'cal'     ? '' : 'none';
+  document.getElementById('stab-cal').className     = 'stab' + (sec === 'cal'     ? ' active' : '');
+  document.getElementById('stab-markets').className = 'stab' + (sec === 'markets' ? ' active' : '');
+  if (sec === 'markets') renderMarkets();
+}
+
+// ── 4. FILTER STATE ──
+var activeImpacts    = { High: true, Medium: false, Low: false };
 var activeCurrencies = {};
 
-function toggleImpact(imp){
-  var onCount = Object.values(activeImpacts).filter(Boolean).length;
-  if(activeImpacts[imp] && onCount===1) return;
+function toggleImpact(imp) {
+  var onCount = Object.keys(activeImpacts).filter(function(k) { return activeImpacts[k]; }).length;
+  if (activeImpacts[imp] && onCount === 1) return; // keep at least one
   activeImpacts[imp] = !activeImpacts[imp];
-  document.getElementById('f-'+imp).classList.toggle('on', activeImpacts[imp]);
+  document.getElementById('f-' + imp).classList.toggle('on', activeImpacts[imp]);
   renderFromCache();
 }
-function toggleCur(el){
+function toggleCur(el) {
   var cur = el.getAttribute('data-cur');
-  if(activeCurrencies[cur]){ delete activeCurrencies[cur]; el.classList.remove('on'); }
-  else { activeCurrencies[cur]=true; el.classList.add('on'); }
+  if (activeCurrencies[cur]) { delete activeCurrencies[cur]; el.classList.remove('on'); }
+  else { activeCurrencies[cur] = true; el.classList.add('on'); }
   renderFromCache();
 }
 
-// ── WEEK STATE ──
-var weekOffset = 0;
+// ── 5. WEEK STATE ──
+var weekOffset   = 0;
 var cachedEvents = [];
-function changeWeek(dir){ weekOffset+=dir; loadCalendar(); }
 
-function getWeekBounds(off){
-  var now=new Date(), day=now.getDay();
-  var mon=new Date(now);
-  mon.setDate(now.getDate()-(day===0?6:day-1)+off*7);
-  mon.setHours(0,0,0,0);
-  var sun=new Date(mon); sun.setDate(mon.getDate()+6); sun.setHours(23,59,59,999);
-  return {monday:mon, sunday:sun};
+function changeWeek(dir) { weekOffset += dir; loadCalendar(); }
+
+function getWeekBounds(off) {
+  var now = new Date(), day = now.getDay();
+  var mon = new Date(now);
+  mon.setDate(now.getDate() - (day === 0 ? 6 : day - 1) + off * 7);
+  mon.setHours(0, 0, 0, 0);
+  var sun = new Date(mon);
+  sun.setDate(mon.getDate() + 6);
+  sun.setHours(23, 59, 59, 999);
+  return { monday: mon, sunday: sun };
 }
-function fmtWeekLabel(mon,sun){
-  try{
-    var o={day:'numeric',month:'short'}, l=navigator.language||'it-IT';
-    return mon.toLocaleDateString(l,o)+' – '+sun.toLocaleDateString(l,Object.assign({},o,{year:'numeric'}));
-  }catch(e){return mon.toDateString()+' – '+sun.toDateString();}
+function fmtWeekLabel(mon, sun) {
+  var o = { day: 'numeric', month: 'short' };
+  var l = navigator.language || 'it-IT';
+  try {
+    return mon.toLocaleDateString(l, o) + ' – ' + sun.toLocaleDateString(l, Object.assign({}, o, { year: 'numeric' }));
+  } catch(e) { return mon.toDateString() + ' – ' + sun.toDateString(); }
 }
 
-// ── TIMEZONE CONVERSION ──
-// Get UTC offset of a timezone at a given UTC instant, in minutes.
-// e.g. America/New_York EDT → returns -240
-// Uses toLocaleString which is reliable across all browsers including Safari iOS.
-function getTimezoneOffsetMinutes(tz, utcDate) {
-  // Format the UTC date as a locale string in the target timezone
-  // Use a fixed locale to avoid formatting quirks
-  var localStr = utcDate.toLocaleString('en-US', {
-    timeZone: tz,
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit',
-    hour12: false
+// ── 6. TIME CONVERSION ──
+// The ONLY correct way to convert a New York wall-clock time to UTC:
+// Build the date string exactly as New York sees it, then use
+// Date.parse with a known-UTC reference to find the real UTC ms.
+//
+// The trick: toLocaleString('en-CA') gives "YYYY-MM-DD" format.
+// We build "YYYY-MM-DDTHH:MM:SS" and ask Intl what NY shows,
+// measure the delta, subtract once. No loops.
+//
+// Verified: 08:30 NY (EDT=UTC-4) → 12:30 UTC → 14:30 Rome (CEST=UTC+2) ✓
+
+function nyTimeToUTC(yr, mo, da, h, min) {
+  // Step A: get a reference UTC timestamp for noon on the event date
+  // (safe midday reference, far from DST transitions at 2am)
+  var noonUTC = Date.UTC(yr, mo - 1, da, 12, 0, 0);
+
+  // Step B: ask what time New York shows for this UTC noon
+  var nyNoonStr = new Date(noonUTC).toLocaleString('en-US', {
+    timeZone: 'America/New_York',
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit'
   });
-  // localStr format: "05/12/2026, 08:30:00"
-  // Parse it
-  var m = localStr.match(/(\d+)\/(\d+)\/(\d+),?\s+(\d+):(\d+):(\d+)/);
-  if (!m) return 0;
-  var mo=parseInt(m[1],10)-1, da=parseInt(m[2],10), yr=parseInt(m[3],10);
-  var hh=parseInt(m[4],10)%24, mm=parseInt(m[5],10), ss=parseInt(m[6],10);
-  // Build the local time as if it were UTC
-  var localAsUTC = Date.UTC(yr, mo, da, hh, mm, ss);
-  return (localAsUTC - utcDate.getTime()) / 60000;
+  // nyNoonStr = "08:00" if NY is UTC-4 (EDT), "07:00" if UTC-5 (EST)
+  // Parse the hours shown
+  var colon    = nyNoonStr.indexOf(':');
+  var nyNoonH  = parseInt(nyNoonStr.substring(0, colon), 10) % 24;
+  // NY offset from UTC in hours (e.g. EDT = -4, so nyNoonH=8 meaning UTC-4)
+  var nyOffsetH = nyNoonH - 12; // e.g. 8 - 12 = -4
+
+  // Step C: compute real UTC from the event's NY wall-clock time
+  // UTC = NY_time - NY_offset  →  UTC = NY_time + abs(offset)
+  var utcMs = Date.UTC(yr, mo - 1, da, h - nyOffsetH, min, 0);
+  return new Date(utcMs);
 }
 
 function parseFFTime(dateStr, timeStr) {
   try {
-    var ts = (timeStr||'').trim();
-    if (!ts || ts==='All Day' || ts==='Tentative') return {utcDate:null, isAllDay:true};
-    var dp = (dateStr||'').split('-');
-    if (dp.length!==3) return {utcDate:null, isAllDay:false};
-    var mo=parseInt(dp[0],10), da=parseInt(dp[1],10), yr=parseInt(dp[2],10);
-    if (isNaN(mo)||isNaN(da)||isNaN(yr)) return {utcDate:null, isAllDay:false};
-    var tm = ts.match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/i);
-    if (!tm) return {utcDate:null, isAllDay:false};
-    var h=parseInt(tm[1],10), min=parseInt(tm[2],10), ap=tm[3].toLowerCase();
-    if (ap==='pm' && h!==12) h+=12;
-    if (ap==='am' && h===12) h=0;
+    var ts = (timeStr || '').trim();
+    if (!ts || ts === 'All Day' || ts === 'Tentative') return { utcDate: null, isAllDay: true };
 
-    // Build a probe: treat NY wall-clock as UTC (naive)
-    var probe = new Date(Date.UTC(yr, mo-1, da, h, min, 0));
-    // Get the actual NY offset at this date (handles DST automatically)
-    var nyOffset = getTimezoneOffsetMinutes('America/New_York', probe);
-    // Real UTC = naive UTC - NY offset
-    // e.g.: probe=08:30 UTC, nyOffset=-240 → utcDate=08:30-(-240min)=12:30 UTC
-    var utcDate = new Date(probe.getTime() - nyOffset*60000);
-    return {utcDate:utcDate, isAllDay:false};
+    // FF date: "MM-DD-YYYY"
+    var dp = (dateStr || '').split('-');
+    if (dp.length !== 3) return { utcDate: null, isAllDay: false };
+    var mo = parseInt(dp[0], 10), da = parseInt(dp[1], 10), yr = parseInt(dp[2], 10);
+    if (isNaN(mo) || isNaN(da) || isNaN(yr)) return { utcDate: null, isAllDay: false };
+
+    // FF time: "8:30am"
+    var tm = ts.match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/i);
+    if (!tm) return { utcDate: null, isAllDay: false };
+    var h = parseInt(tm[1], 10), min = parseInt(tm[2], 10), ap = tm[3].toLowerCase();
+    if (ap === 'pm' && h !== 12) h += 12;
+    if (ap === 'am' && h === 12) h = 0;
+
+    return { utcDate: nyTimeToUTC(yr, mo, da, h, min), isAllDay: false };
   } catch(e) {
-    console.warn('parseFFTime error:', dateStr, timeStr, e);
-    return {utcDate:null, isAllDay:false};
+    return { utcDate: null, isAllDay: false };
   }
 }
 
 function fmtLocal(utcDate) {
   if (!utcDate || isNaN(utcDate.getTime())) return '—';
   try {
-    return new Intl.DateTimeFormat(navigator.language||'it-IT', {
-      timeZone: USER_TZ, hour:'2-digit', minute:'2-digit', hour12:false
+    return new Intl.DateTimeFormat(navigator.language || 'it-IT', {
+      timeZone: USER_TZ, hour: '2-digit', minute: '2-digit', hour12: false
     }).format(utcDate);
   } catch(e) {
-    var uh=utcDate.getUTCHours(), um=utcDate.getUTCMinutes();
-    return (uh<10?'0':'')+uh+':'+(um<10?'0':'')+um;
+    return utcDate.getUTCHours() + ':' + String(utcDate.getUTCMinutes()).padStart(2,'0');
   }
 }
-}
 
-// ── FETCH ──
-async function fetchFF(week){
-  var url='https://lotcal-api.vercel.app/api/calendar?week='+week;
-  var res=await fetch(url,{cache:'no-store'});
-  if(!res.ok) throw new Error('HTTP '+res.status);
-  var txt=await res.text();
-  if(!txt||!txt.trim()) throw new Error('Risposta vuota');
+// ── 7. FETCH ──
+async function fetchFF(week) {
+  var url = 'https://lotcal-api.vercel.app/api/calendar?week=' + week;
+  var res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  var txt = await res.text();
+  if (!txt || !txt.trim()) throw new Error('Risposta vuota dal server');
   return txt;
 }
 
-function parseXML(xml){
-  try{
-    var doc=new DOMParser().parseFromString(xml,'text/xml');
-    if(doc.querySelector('parsererror')) throw new Error('XML non valido');
-    return Array.from(doc.querySelectorAll('event')).map(function(e){
+// ── 8. XML PARSE ──
+function parseXML(xml) {
+  try {
+    var doc = new DOMParser().parseFromString(xml, 'text/xml');
+    if (doc.querySelector('parsererror')) throw new Error('XML non valido');
+    return Array.from(doc.querySelectorAll('event')).map(function(e) {
       return {
-        date:    (e.querySelector('date')?.textContent||'').trim(),
-        time:    (e.querySelector('time')?.textContent||'').trim(),
-        currency:(e.querySelector('currency')?.textContent||'').trim(),
-        title:   (e.querySelector('title')?.textContent||'').trim(),
-        impact:  (e.querySelector('impact')?.textContent||'').trim(),
+        date:     (e.querySelector('date')?.textContent     || '').trim(),
+        time:     (e.querySelector('time')?.textContent     || '').trim(),
+        currency: (e.querySelector('currency')?.textContent || '').trim(),
+        title:    (e.querySelector('title')?.textContent    || '').trim(),
+        impact:   (e.querySelector('impact')?.textContent   || '').trim(),
       };
-    }).filter(function(e){ return e.date&&['High','Medium','Low'].includes(e.impact); });
-  }catch(e){ console.error('parseXML',e); return []; }
+    }).filter(function(e) {
+      return e.date && ['High', 'Medium', 'Low'].includes(e.impact);
+    });
+  } catch(e) { return []; }
 }
 
-// ── INSTRUMENT MAPPING ──
-var KEYWORD_RULES=[
-  {p:/german|germany|ifo|zew|buba|bundesbank|destatis/i,           primary:['GER40'],                        secondary:['EURUSD','EURGBP']},
-  {p:/ecb|european central bank|euro.?zone|euro.?area|lagarde/i,   primary:['EURUSD','EURGBP','GER40'],      secondary:[]},
-  {p:/french|france/i,                                              primary:['EURUSD','EURGBP'],              secondary:['GER40']},
-  {p:/italian|italy/i,                                              primary:['EURUSD'],                       secondary:['GER40','EURGBP']},
-  {p:/crude oil inv|eia crude|oil inv|petroleum inv|cushing/i,      primary:['USOIL'],                        secondary:['US500','US100']},
-  {p:/crude|opec|petroleum|eia|oil price/i,                         primary:['USOIL'],                        secondary:['US500']},
-  {p:/unemployment|jobless|initial claims|continuing claims/i,      primary:['US500','US100'],                secondary:['EURUSD','XAUUSD','USOIL','BTCUSD','AUDJPY']},
-  {p:/nonfarm|non-farm|nfp/i,                                       primary:['US500','US100','EURUSD','XAUUSD'],secondary:['USOIL','BTCUSD','AUDJPY']},
-  {p:/fed |fomc|powell|federal reserve|interest rate/i,             primary:['US500','US100','XAUUSD','EURUSD'],secondary:['USOIL','BTCUSD','AUDJPY','EURGBP']},
-  {p:/cpi|ppi|inflation|core.*price|price.*index/i,                 primary:['US500','US100','XAUUSD'],       secondary:['EURUSD','USOIL','BTCUSD']},
-  {p:/gdp|retail sales|ism|flash.*pmi|services pmi|manufacturing pmi/i,primary:['US500','US100'],            secondary:['EURUSD','XAUUSD','USOIL','BTCUSD']},
-  {p:/gold|silver|metal/i,                                          primary:['XAUUSD'],                       secondary:[]},
-  {p:/bitcoin|crypto|btc/i,                                         primary:['BTCUSD'],                       secondary:[]},
-  {p:/boe|bank of england|bailey|united kingdom|british/i,          primary:['EURGBP'],                       secondary:['EURUSD']},
-  {p:/rba|reserve bank of australia|australian/i,                   primary:['AUDJPY'],                       secondary:[]},
-  {p:/boj|bank of japan|ueda|japanese/i,                            primary:['AUDJPY'],                       secondary:[]},
+// ── 9. INSTRUMENT MAPPING ──
+var KEYWORD_RULES = [
+  { p: /german|germany|ifo|zew|buba|bundesbank|destatis/i,          primary: ['GER40'],                          secondary: ['EURUSD','EURGBP'] },
+  { p: /ecb|european central bank|euro.?zone|euro.?area|lagarde/i,  primary: ['EURUSD','EURGBP','GER40'],        secondary: [] },
+  { p: /french|france/i,                                             primary: ['EURUSD','EURGBP'],                secondary: ['GER40'] },
+  { p: /italian|italy/i,                                             primary: ['EURUSD'],                         secondary: ['GER40','EURGBP'] },
+  { p: /crude oil inv|eia crude|oil inv|petroleum inv|cushing/i,     primary: ['USOIL'],                          secondary: ['US500','US100'] },
+  { p: /crude|opec|petroleum|eia|oil price/i,                        primary: ['USOIL'],                          secondary: ['US500'] },
+  { p: /unemployment|jobless|initial claims|continuing claims/i,     primary: ['US500','US100'],                  secondary: ['EURUSD','XAUUSD','USOIL','BTCUSD','AUDJPY'] },
+  { p: /nonfarm|non-farm|nfp/i,                                      primary: ['US500','US100','EURUSD','XAUUSD'],secondary: ['USOIL','BTCUSD','AUDJPY'] },
+  { p: /fed |fomc|powell|federal reserve|interest rate/i,            primary: ['US500','US100','XAUUSD','EURUSD'],secondary: ['USOIL','BTCUSD','AUDJPY','EURGBP'] },
+  { p: /cpi|ppi|inflation|core.*price|price.*index/i,                primary: ['US500','US100','XAUUSD'],         secondary: ['EURUSD','USOIL','BTCUSD'] },
+  { p: /gdp|retail sales|ism|flash.*pmi|services pmi|manufacturing pmi/i, primary: ['US500','US100'],            secondary: ['EURUSD','XAUUSD','USOIL','BTCUSD'] },
+  { p: /gold|silver|metal/i,                                         primary: ['XAUUSD'],                         secondary: [] },
+  { p: /bitcoin|crypto|btc/i,                                        primary: ['BTCUSD'],                         secondary: [] },
+  { p: /boe|bank of england|bailey|united kingdom|british/i,         primary: ['EURGBP'],                         secondary: ['EURUSD'] },
+  { p: /rba|reserve bank of australia|australian/i,                  primary: ['AUDJPY'],                         secondary: [] },
+  { p: /boj|bank of japan|ueda|japanese/i,                           primary: ['AUDJPY'],                         secondary: [] },
 ];
-var CUR_FB={
-  USD:{primary:['EURUSD','XAUUSD','USOIL','US500','US100'],secondary:['BTCUSD','AUDJPY']},
-  EUR:{primary:['EURUSD','EURGBP','GER40'],secondary:[]},
-  GBP:{primary:['EURGBP'],secondary:['EURUSD']},
-  AUD:{primary:['AUDJPY'],secondary:[]},
-  JPY:{primary:['AUDJPY'],secondary:[]},
+var CUR_FB = {
+  USD: { primary: ['EURUSD','XAUUSD','USOIL','US500','US100'], secondary: ['BTCUSD','AUDJPY'] },
+  EUR: { primary: ['EURUSD','EURGBP','GER40'], secondary: [] },
+  GBP: { primary: ['EURGBP'], secondary: ['EURUSD'] },
+  AUD: { primary: ['AUDJPY'], secondary: [] },
+  JPY: { primary: ['AUDJPY'], secondary: [] },
 };
-function resolveInstr(currency,title){
-  for(var i=0;i<KEYWORD_RULES.length;i++){
-    if(KEYWORD_RULES[i].p.test(title)) return KEYWORD_RULES[i];
+function resolveInstr(currency, title) {
+  for (var i = 0; i < KEYWORD_RULES.length; i++) {
+    if (KEYWORD_RULES[i].p.test(title)) return KEYWORD_RULES[i];
   }
-  return CUR_FB[currency]||{primary:[],secondary:[]};
+  return CUR_FB[currency] || { primary: [], secondary: [] };
 }
 
-// ── RENDER NEWS ──
-var DAY_NAMES=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
-var MONTHS=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+// ── 10. RENDER NEWS ──
+var DAY_NAMES = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+var MONTHS    = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 
-function renderFromCache(){
-  var body=document.getElementById('cal-body');
-  if(!cachedEvents.length){body.innerHTML='<div class="status-box">Nessun evento. Premi Aggiorna.</div>';return;}
-  var bounds=getWeekBounds(weekOffset);
-  var curActive=Object.keys(activeCurrencies).length>0;
-  var filtered=cachedEvents.filter(function(ev){
-    if(!activeImpacts[ev.impact]) return false;
-    if(curActive&&!activeCurrencies[ev.currency]) return false;
-    var dp=(ev.date||'').split('-');
-    if(dp.length!==3) return false;
-    var dt=new Date(parseInt(dp[2],10),parseInt(dp[0],10)-1,parseInt(dp[1],10));
-    return dt>=bounds.monday&&dt<=bounds.sunday;
-  });
-  if(!filtered.length){body.innerHTML='<div class="status-box">Nessun evento con i filtri selezionati.</div>';return;}
+function renderFromCache() {
+  var body = document.getElementById('cal-body');
+  if (!cachedEvents.length) { body.innerHTML = '<div class="status-box">Nessun evento. Premi Aggiorna.</div>'; return; }
 
-  // Group by date key
-  var groups={};
-  filtered.forEach(function(ev){
-    var parsed=parseFFTime(ev.date,ev.time);
-    var key=ev.date;
-    if(!groups[key]) groups[key]=[];
-    groups[key].push(Object.assign({},ev,{utcDate:parsed.utcDate,isAllDay:parsed.isAllDay}));
+  var bounds = getWeekBounds(weekOffset);
+  var curActive = Object.keys(activeCurrencies).length > 0;
+
+  var filtered = cachedEvents.filter(function(ev) {
+    if (!activeImpacts[ev.impact]) return false;
+    if (curActive && !activeCurrencies[ev.currency]) return false;
+    var dp = (ev.date || '').split('-');
+    if (dp.length !== 3) return false;
+    var dt = new Date(parseInt(dp[2],10), parseInt(dp[0],10)-1, parseInt(dp[1],10));
+    return dt >= bounds.monday && dt <= bounds.sunday;
   });
 
-  var sortedKeys=Object.keys(groups).sort(function(a,b){
-    var ap=a.split('-'),bp=b.split('-');
-    return new Date(parseInt(ap[2],10),parseInt(ap[0],10)-1,parseInt(ap[1],10))-
-           new Date(parseInt(bp[2],10),parseInt(bp[0],10)-1,parseInt(bp[1],10));
+  if (!filtered.length) { body.innerHTML = '<div class="status-box">Nessun evento con i filtri selezionati.</div>'; return; }
+
+  // Group by date
+  var groups = {};
+  filtered.forEach(function(ev) {
+    var parsed = parseFFTime(ev.date, ev.time);
+    if (!groups[ev.date]) groups[ev.date] = [];
+    groups[ev.date].push(Object.assign({}, ev, { utcDate: parsed.utcDate, isAllDay: parsed.isAllDay }));
   });
 
-  var now=new Date(), html='';
-  sortedKeys.forEach(function(key){
-    var dp=key.split('-');
-    var mo=parseInt(dp[0],10),da=parseInt(dp[1],10),yr=parseInt(dp[2],10);
-    var dt=new Date(yr,mo-1,da);
-    var isToday=dt.toDateString()===now.toDateString();
-    html+='<div class="day-group"><div class="day-header">'
-      +'<span class="day-name">'+(DAY_NAMES[dt.getDay()]||'')+'</span>'
-      +'<span class="day-date">'+da+' '+(MONTHS[mo-1]||'')+' '+yr+'</span>'
-      +(isToday?'<span class="day-today">Oggi</span>':'')
-      +'</div>';
+  var sortedKeys = Object.keys(groups).sort(function(a, b) {
+    var ap = a.split('-'), bp = b.split('-');
+    return new Date(parseInt(ap[2],10), parseInt(ap[0],10)-1, parseInt(ap[1],10)) -
+           new Date(parseInt(bp[2],10), parseInt(bp[0],10)-1, parseInt(bp[1],10));
+  });
 
-    var evs=groups[key].slice().sort(function(a,b){
-      if(!a.utcDate) return -1; if(!b.utcDate) return 1;
-      return a.utcDate-b.utcDate;
+  var now = new Date(), html = '';
+  sortedKeys.forEach(function(key) {
+    var dp = key.split('-');
+    var mo = parseInt(dp[0],10), da = parseInt(dp[1],10), yr = parseInt(dp[2],10);
+    var dt = new Date(yr, mo-1, da);
+    var isToday = dt.toDateString() === now.toDateString();
+
+    html += '<div class="day-group"><div class="day-header">'
+      + '<span class="day-name">' + (DAY_NAMES[dt.getDay()]||'') + '</span>'
+      + '<span class="day-date">' + da + ' ' + (MONTHS[mo-1]||'') + ' ' + yr + '</span>'
+      + (isToday ? '<span class="day-today">Oggi</span>' : '')
+      + '</div>';
+
+    var evs = groups[key].slice().sort(function(a,b) {
+      if (!a.utcDate) return -1; if (!b.utcDate) return 1;
+      return a.utcDate - b.utcDate;
     });
 
-    evs.forEach(function(ev){
-      var localTime=ev.isAllDay?'All Day':fmtLocal(ev.utcDate);
-      var isPast=!ev.isAllDay&&ev.utcDate&&ev.utcDate<now;
-      var instr=resolveInstr(ev.currency,ev.title);
-      var pillsHtml='';
-      (instr.primary||[]).forEach(function(i){pillsHtml+='<span class="instr-pill primary">'+i+'</span>';});
-      (instr.secondary||[]).forEach(function(i){pillsHtml+='<span class="instr-pill">'+i+'</span>';});
+    evs.forEach(function(ev) {
+      var localTime = ev.isAllDay ? 'All Day' : fmtLocal(ev.utcDate);
+      var isPast = !ev.isAllDay && ev.utcDate && ev.utcDate < now;
+      var instr = resolveInstr(ev.currency, ev.title);
+      var pillsHtml = '';
+      (instr.primary   || []).forEach(function(i) { pillsHtml += '<span class="instr-pill primary">' + i + '</span>'; });
+      (instr.secondary || []).forEach(function(i) { pillsHtml += '<span class="instr-pill">' + i + '</span>'; });
 
-      html+='<div class="event-card impact-'+ev.impact+(isPast?' past':'')+'"><div class="event-top">'
-        +'<span class="event-time'+(ev.isAllDay?' allday':'')+'">'+ localTime+'</span>'
-        +'<div class="event-right"><span class="event-currency">'+ev.currency+'</span></div>'
-        +'</div><div class="event-title">'+ev.title+'</div>'
-        +(pillsHtml?'<div class="event-instruments">'+pillsHtml+'</div>':'')
-        +'</div>';
+      html += '<div class="event-card impact-' + ev.impact + (isPast ? ' past' : '') + '">'
+        + '<div class="event-top">'
+        + '<span class="event-time' + (ev.isAllDay ? ' allday' : '') + '">' + localTime + '</span>'
+        + '<span class="event-currency">' + ev.currency + '</span>'
+        + '</div>'
+        + '<div class="event-title">' + ev.title + '</div>'
+        + (pillsHtml ? '<div class="event-instruments">' + pillsHtml + '</div>' : '')
+        + '</div>';
     });
-    html+='</div>';
+    html += '</div>';
   });
-  body.innerHTML=html;
+  body.innerHTML = html;
 }
 
-// ── LOAD CALENDAR ──
-async function loadCalendar(){
-  var bounds=getWeekBounds(weekOffset);
-  document.getElementById('week-label').textContent=fmtWeekLabel(bounds.monday,bounds.sunday);
+// ── 11. LOAD CALENDAR ──
+async function loadCalendar() {
+  var bounds = getWeekBounds(weekOffset);
+  document.getElementById('week-label').textContent = fmtWeekLabel(bounds.monday, bounds.sunday);
   document.getElementById('err-bar').classList.remove('show');
-  document.getElementById('cal-body').innerHTML='<div class="status-box"><div class="spinner"></div>Caricamento…</div>';
-  if(weekOffset<0||weekOffset>1){
-    document.getElementById('cal-body').innerHTML='<div class="status-box">Il feed Forex Factory fornisce solo la settimana corrente e quella successiva.</div>';
+  document.getElementById('cal-body').innerHTML = '<div class="status-box"><div class="spinner"></div>Caricamento…</div>';
+
+  if (weekOffset < 0 || weekOffset > 1) {
+    document.getElementById('cal-body').innerHTML = '<div class="status-box">Il feed Forex Factory fornisce solo settimana corrente e prossima.</div>';
     return;
   }
-  try{
-    var xml=await fetchFF(weekOffset===1?'next':'this');
-    cachedEvents=parseXML(xml);
+  try {
+    var xml = await fetchFF(weekOffset === 1 ? 'next' : 'this');
+    cachedEvents = parseXML(xml);
     renderFromCache();
-  }catch(err){
-    console.error('loadCalendar',err);
-    document.getElementById('cal-body').innerHTML='';
-    document.getElementById('err-msg').textContent=err.message||'Errore sconosciuto';
+  } catch(err) {
+    document.getElementById('cal-body').innerHTML = '';
+    document.getElementById('err-msg').textContent = err.message || 'Errore sconosciuto';
     document.getElementById('err-bar').classList.add('show');
   }
 }
 
-// ── MARKETS ──
-var MARKETS=[
-  {name:'New York',    flag:'🇺🇸',tz:'America/New_York',
-   sessions:[{label:'Regular',open:[9,30],close:[16,0]}],
-   instruments:['US500','US100','BTCUSD','XAUUSD','USOIL'],
-   note:'Pre-market 04:00–09:30 NY · After-hours 16:00–20:00 NY'},
-  {name:'Londra',      flag:'🇬🇧',tz:'Europe/London',
-   sessions:[{label:'Regular',open:[8,0],close:[16,30]}],
-   instruments:['EURGBP','EURUSD','XAUUSD'],
-   note:'Overlap Londra–NY: 13:00–16:30 ora Londra'},
-  {name:'Francoforte', flag:'🇩🇪',tz:'Europe/Berlin',
-   sessions:[{label:'Xetra',open:[9,0],close:[17,30]}],
-   instruments:['GER40','EURUSD','EURGBP'],
-   note:'Pre-trading 08:00–09:00'},
-  {name:'Tokyo',       flag:'🇯🇵',tz:'Asia/Tokyo',
-   sessions:[{label:'Mattina',open:[9,0],close:[11,30]},{label:'Pomeriggio',open:[12,30],close:[15,30]}],
-   instruments:['AUDJPY'],
-   note:'Pausa pranzo 11:30–12:30'},
+// ── 12. MARKETS ──
+var MARKETS = [
+  { name:'New York',    flag:'🇺🇸', tz:'America/New_York',
+    sessions:[{label:'Regular',open:[9,30],close:[16,0]}],
+    instruments:['US500','US100','BTCUSD','XAUUSD','USOIL'],
+    note:'Pre-market 04:00–09:30 · After-hours 16:00–20:00 (NY time)' },
+  { name:'Londra',      flag:'🇬🇧', tz:'Europe/London',
+    sessions:[{label:'Regular',open:[8,0],close:[16,30]}],
+    instruments:['EURGBP','EURUSD','XAUUSD'],
+    note:'Overlap NY–Londra: 13:00–16:30 ora locale Londra' },
+  { name:'Francoforte', flag:'🇩🇪', tz:'Europe/Berlin',
+    sessions:[{label:'Xetra',open:[9,0],close:[17,30]}],
+    instruments:['GER40','EURUSD','EURGBP'],
+    note:'Pre-trading 08:00–09:00 ora Berlino' },
+  { name:'Tokyo',       flag:'🇯🇵', tz:'Asia/Tokyo',
+    sessions:[{label:'Mattina',open:[9,0],close:[11,30]},{label:'Pomeriggio',open:[12,30],close:[15,30]}],
+    instruments:['AUDJPY'],
+    note:'Pausa pranzo 11:30–12:30 ora Tokyo' },
 ];
 
-// Convert h:m wall-clock in `tz` → display string in USER_TZ
-// Convert h:m wall-clock in source `tz` → display string in USER_TZ
-function wallToUserDisplay(tz, h, m) {
+function tzWallToUserDisplay(tz, h, m) {
+  // Same method as nyTimeToUTC but for any timezone
   try {
     var now = new Date();
-    // Get today's date in the source tz using toLocaleString (Safari-safe)
-    var dateStr = now.toLocaleString('en-US', {
-      timeZone: tz, year:'numeric', month:'2-digit', day:'2-digit'
+    // Get today's date in source tz
+    var dateStr = now.toLocaleDateString('en-CA', { timeZone: tz }); // "YYYY-MM-DD"
+    var parts = dateStr.split('-');
+    var yr = parseInt(parts[0],10), mo = parseInt(parts[1],10), da = parseInt(parts[2],10);
+    // Use noon reference to get offset
+    var noonUTC = Date.UTC(yr, mo-1, da, 12, 0, 0);
+    var nyNoonStr = new Date(noonUTC).toLocaleString('en-US', {
+      timeZone: tz, hour12: false, hour: '2-digit', minute: '2-digit'
     });
-    // dateStr: "05/12/2026" or "05/12/2026, ..."
-    var dm = dateStr.match(/(\d+)\/(\d+)\/(\d+)/);
-    if (!dm) return (h<10?'0':'')+h+':'+(m<10?'0':'')+m;
-    var mo=parseInt(dm[1],10)-1, da=parseInt(dm[2],10), yr=parseInt(dm[3],10);
-    var probe = new Date(Date.UTC(yr, mo, da, h, m, 0));
-    var srcOffset = getTimezoneOffsetMinutes(tz, probe);
-    var utcDate = new Date(probe.getTime() - srcOffset*60000);
-    return new Intl.DateTimeFormat(navigator.language||'it-IT', {
-      timeZone: USER_TZ, hour:'2-digit', minute:'2-digit', hour12:false
+    var colon   = nyNoonStr.indexOf(':');
+    var noonH   = parseInt(nyNoonStr.substring(0, colon), 10) % 24;
+    var offsetH = noonH - 12;
+    var utcDate = new Date(Date.UTC(yr, mo-1, da, h - offsetH, m, 0));
+    return new Intl.DateTimeFormat(navigator.language || 'it-IT', {
+      timeZone: USER_TZ, hour: '2-digit', minute: '2-digit', hour12: false
     }).format(utcDate);
-  } catch(e) {
-    return (h<10?'0':'')+h+':'+(m<10?'0':'')+m;
-  }
+  } catch(e) { return (h<10?'0':'')+h+':'+(m<10?'0':'')+m; }
 }
 
-function getMarketStatus(market){
-  try{
-    var str=new Intl.DateTimeFormat('en-US',{timeZone:market.tz,hour12:false,hour:'2-digit',minute:'2-digit',weekday:'short'}).format(new Date());
-    var parts=str.match(/^(\w+),?\s*(\d+):(\d+)/)||str.match(/^(\d+):(\d+)/);
-    // Better: use formatToParts
-    var fmt=new Intl.DateTimeFormat('en-US',{timeZone:market.tz,hour12:false,hour:'2-digit',minute:'2-digit',weekday:'short'});
-    var fp=fmt.formatToParts(new Date());
-    var wd=(fp.find(function(p){return p.type==='weekday';})||{}).value||'Mon';
-    var mh=parseInt((fp.find(function(p){return p.type==='hour';})||{}).value||'0',10)%24;
-    var mm=parseInt((fp.find(function(p){return p.type==='minute';})||{}).value||'0',10);
-    if(wd==='Sat'||wd==='Sun') return 'closed';
-    var nowMin=mh*60+mm;
-    for(var i=0;i<market.sessions.length;i++){
-      var s=market.sessions[i];
-      if(nowMin>=s.open[0]*60+s.open[1]&&nowMin<s.close[0]*60+s.close[1]) return 'open';
+function getMarketStatus(market) {
+  try {
+    var localStr = new Date().toLocaleString('en-US', {
+      timeZone: market.tz, hour12: false,
+      weekday: 'short', hour: '2-digit', minute: '2-digit'
+    });
+    // "Mon, 08:30" or similar
+    var parts = localStr.split(/,\s*/);
+    var wd = parts[0];
+    var timeParts = (parts[1] || '').split(':');
+    var h = parseInt(timeParts[0], 10) % 24;
+    var m = parseInt(timeParts[1], 10);
+    if (wd === 'Sat' || wd === 'Sun') return 'closed';
+    var nowMin = h * 60 + m;
+    for (var i = 0; i < market.sessions.length; i++) {
+      var s = market.sessions[i];
+      if (nowMin >= s.open[0]*60+s.open[1] && nowMin < s.close[0]*60+s.close[1]) return 'open';
     }
     return 'closed';
-  }catch(e){return 'closed';}
+  } catch(e) { return 'closed'; }
 }
 
-var _mktInterval=null;
-function renderMarkets(){
-  var body=document.getElementById('markets-body');
-  var clockEl=document.getElementById('mkt-clock');
-  var tzEl=document.getElementById('mkt-tz');
-  tzEl.textContent=USER_TZ.replace(/_/g,' ');
-
-  // start clock
+function renderMarkets() {
   clearInterval(_mktInterval);
-  function tick(){
-    try{
-      clockEl.textContent=new Intl.DateTimeFormat(navigator.language||'it-IT',{
-        timeZone:USER_TZ,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false
+  var clockEl = document.getElementById('mkt-clock');
+  var tzEl    = document.getElementById('mkt-tz');
+  tzEl.textContent = USER_TZ.replace(/_/g, ' ');
+
+  function tick() {
+    try {
+      clockEl.textContent = new Intl.DateTimeFormat(navigator.language || 'it-IT', {
+        timeZone: USER_TZ, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
       }).format(new Date());
-    }catch(e){}
+    } catch(e) {}
   }
   tick();
-  _mktInterval=setInterval(tick,1000);
+  _mktInterval = setInterval(tick, 1000);
 
-  var html='';
-  MARKETS.forEach(function(mkt){
-    var status=getMarketStatus(mkt);
-    html+='<div class="market-card">'
-      +'<div class="market-header"><div class="market-name-row">'
-      +'<span style="font-size:22px">'+mkt.flag+'</span>'
-      +'<div><div class="market-name">'+mkt.name+'</div>'
-      +'<div class="market-tz">'+mkt.tz.replace(/_/g,' ')+'</div></div></div>'
-      +'<span class="mkt-status '+status+'">'+(status==='open'?'Aperta':'Chiusa')+'</span>'
-      +'</div><div class="market-sessions">';
-    mkt.sessions.forEach(function(s){
-      var openLocal =wallToUserDisplay(mkt.tz,s.open[0], s.open[1]);
-      var closeLocal=wallToUserDisplay(mkt.tz,s.close[0],s.close[1]);
-      html+='<div class="market-session">'
-        +'<span class="session-label">'+s.label+'</span>'
-        +'<span class="session-times">'+openLocal+' – '+closeLocal+'</span>'
-        +'</div>';
+  var html = '';
+  MARKETS.forEach(function(mkt) {
+    var status = getMarketStatus(mkt);
+    html += '<div class="market-card">'
+      + '<div class="market-header"><div class="market-name-row">'
+      + '<span style="font-size:22px">' + mkt.flag + '</span>'
+      + '<div><div class="market-name">' + mkt.name + '</div>'
+      + '<div class="market-tz">' + mkt.tz.replace(/_/g,' ') + '</div></div></div>'
+      + '<span class="mkt-status ' + status + '">' + (status==='open'?'Aperta':'Chiusa') + '</span>'
+      + '</div><div class="market-sessions">';
+
+    mkt.sessions.forEach(function(s) {
+      html += '<div class="market-session">'
+        + '<span class="session-label">' + s.label + '</span>'
+        + '<span class="session-times">'
+        + tzWallToUserDisplay(mkt.tz, s.open[0], s.open[1])
+        + ' – '
+        + tzWallToUserDisplay(mkt.tz, s.close[0], s.close[1])
+        + '</span></div>';
     });
-    html+='</div><div class="market-instruments">';
-    mkt.instruments.forEach(function(i){html+='<span class="mkt-pill">'+i+'</span>';});
-    html+='</div>';
-    if(mkt.note) html+='<div class="market-note">'+mkt.note+'</div>';
-    html+='</div>';
+
+    html += '</div><div class="market-instruments">';
+    mkt.instruments.forEach(function(ins) { html += '<span class="mkt-pill">' + ins + '</span>'; });
+    html += '</div>';
+    if (mkt.note) html += '<div class="market-note">' + mkt.note + '</div>';
+    html += '</div>';
   });
-  body.innerHTML=html;
+  document.getElementById('markets-body').innerHTML = html;
 }
 
 // ── INIT ──
 loadCalendar();
-if('serviceWorker' in navigator) navigator.serviceWorker.register('/lot-calc/sw.js');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/lot-calc/sw.js');
 </script>
 </body>
 </html>
