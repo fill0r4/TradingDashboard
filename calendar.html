@@ -278,24 +278,26 @@ function fmtWeekLabel(mon,sun){
 }
 
 // ── TIMEZONE CONVERSION ──
-// FF gives times as New York wall-clock (America/New_York).
-// Correct result: 8:30am NY (EDT=UTC-4) → 12:30 UTC → 14:30 Rome (UTC+2)
-//
-// Method: measure the actual NY offset at the event date using Intl,
-// then subtract it from the naive UTC to get the real UTC instant.
-// This is a single direct calculation — no loops, no guessing.
-
+// Get UTC offset of a timezone at a given UTC instant, in minutes.
+// e.g. America/New_York EDT → returns -240
+// Uses toLocaleString which is reliable across all browsers including Safari iOS.
 function getTimezoneOffsetMinutes(tz, utcDate) {
-  // Returns offset in minutes such that: localTime = UTC + offset
-  // e.g. America/New_York EDT (UTC-4) returns -240
-  var fmt = new Intl.DateTimeFormat('en-US', {
-    timeZone: tz, hour12: false,
-    year:'numeric', month:'2-digit', day:'2-digit',
-    hour:'2-digit', minute:'2-digit', second:'2-digit'
+  // Format the UTC date as a locale string in the target timezone
+  // Use a fixed locale to avoid formatting quirks
+  var localStr = utcDate.toLocaleString('en-US', {
+    timeZone: tz,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false
   });
-  var parts = fmt.formatToParts(utcDate);
-  function p(t){ return parseInt(parts.find(function(x){return x.type===t;}).value,10); }
-  var localAsUTC = Date.UTC(p('year'), p('month')-1, p('day'), p('hour')%24, p('minute'), p('second'));
+  // localStr format: "05/12/2026, 08:30:00"
+  // Parse it
+  var m = localStr.match(/(\d+)\/(\d+)\/(\d+),?\s+(\d+):(\d+):(\d+)/);
+  if (!m) return 0;
+  var mo=parseInt(m[1],10)-1, da=parseInt(m[2],10), yr=parseInt(m[3],10);
+  var hh=parseInt(m[4],10)%24, mm=parseInt(m[5],10), ss=parseInt(m[6],10);
+  // Build the local time as if it were UTC
+  var localAsUTC = Date.UTC(yr, mo, da, hh, mm, ss);
   return (localAsUTC - utcDate.getTime()) / 60000;
 }
 
@@ -514,26 +516,22 @@ var MARKETS=[
 
 // Convert h:m wall-clock in `tz` → display string in USER_TZ
 // Convert h:m wall-clock in source `tz` → display string in USER_TZ
-// Uses same direct offset measurement as parseFFTime
 function wallToUserDisplay(tz, h, m) {
   try {
     var now = new Date();
-    // Get today's date parts in the source tz
-    var fmt = new Intl.DateTimeFormat('en-US', {
-      timeZone:tz, year:'numeric', month:'2-digit', day:'2-digit'
+    // Get today's date in the source tz using toLocaleString (Safari-safe)
+    var dateStr = now.toLocaleString('en-US', {
+      timeZone: tz, year:'numeric', month:'2-digit', day:'2-digit'
     });
-    var dp = fmt.formatToParts(now);
-    function p(t){ return parseInt(dp.find(function(x){return x.type===t;}).value,10); }
-    var yr=p('year'), mo=p('month'), da=p('day');
-    // Probe: treat the wall-clock time as UTC
-    var probe = new Date(Date.UTC(yr, mo-1, da, h, m, 0));
-    // Get the actual offset of the source tz at this date
+    // dateStr: "05/12/2026" or "05/12/2026, ..."
+    var dm = dateStr.match(/(\d+)\/(\d+)\/(\d+)/);
+    if (!dm) return (h<10?'0':'')+h+':'+(m<10?'0':'')+m;
+    var mo=parseInt(dm[1],10)-1, da=parseInt(dm[2],10), yr=parseInt(dm[3],10);
+    var probe = new Date(Date.UTC(yr, mo, da, h, m, 0));
     var srcOffset = getTimezoneOffsetMinutes(tz, probe);
-    // Real UTC = probe - offset
     var utcDate = new Date(probe.getTime() - srcOffset*60000);
-    // Format in user's local tz
     return new Intl.DateTimeFormat(navigator.language||'it-IT', {
-      timeZone:USER_TZ, hour:'2-digit', minute:'2-digit', hour12:false
+      timeZone: USER_TZ, hour:'2-digit', minute:'2-digit', hour12:false
     }).format(utcDate);
   } catch(e) {
     return (h<10?'0':'')+h+':'+(m<10?'0':'')+m;
