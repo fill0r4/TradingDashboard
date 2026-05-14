@@ -264,24 +264,21 @@ function fmtWeekLabel(mon, sun) {
 
 // ─── TIME CONVERSION ────────────────────────────────────────────────────────
 
-// Trova l'offset in ore (es. -4 per NY) in modo nativo e cross-browser
-function getOffsetHours(tz) {
-  try {
-    var parts = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'shortOffset' }).formatToParts(new Date());
-    var tzPart = parts.find(function(p){ return p.type === 'timeZoneName'; });
-    if (tzPart && tzPart.value !== 'GMT') {
-      var m = tzPart.value.match(/GMT([+-]\d+)/);
-      if (m) return parseInt(m[1], 10);
-    }
-    return 0; 
-  } catch(e) {
-    // Fallback di sicurezza
-    var loc = parseInt(new Intl.DateTimeFormat('en-US', {timeZone: tz, hour: 'numeric', hour12: false}).format(new Date()), 10);
-    var utc = parseInt(new Intl.DateTimeFormat('en-US', {timeZone: 'UTC', hour: 'numeric', hour12: false}).format(new Date()), 10);
-    var d = loc - utc;
-    if (d < -12) d += 24; if (d > 12) d -= 24;
-    return d;
-  }
+// Ottiene i dettagli dell'orario in modo chirurgico per evitare i bug di Safari
+function getHourInfoInTz(tz, dateObj) {
+  var d = dateObj || new Date();
+  var parts = new Intl.DateTimeFormat('en-US', { timeZone: tz, weekday: 'short', hour: 'numeric', minute: 'numeric', hour12: false }).formatToParts(d);
+  var wd = '', h = 0, m = 0, ap = '';
+  parts.forEach(function(p) {
+    if (p.type === 'weekday') wd = p.value;
+    if (p.type === 'hour') h = parseInt(p.value, 10);
+    if (p.type === 'minute') m = parseInt(p.value, 10);
+    if (p.type === 'dayPeriod') ap = p.value.toLowerCase();
+  });
+  if (h === 24) h = 0;
+  if (ap === 'pm' && h < 12) h += 12;
+  if (ap === 'am' && h === 12) h = 0;
+  return { wd: wd, h: h, m: m };
 }
 
 function parseFFTime(dateStr, timeStr) {
@@ -299,10 +296,8 @@ function parseFFTime(dateStr, timeStr) {
     if (ap==='pm' && h!==12) h+=12;
     if (ap==='am' && h===12) h=0;
 
-    // L'API è in ora di New York. Troviamo il suo offset attuale e calcoliamo l'UTC
-    var offset = getOffsetHours('America/New_York');
-    var utcMs = Date.UTC(yr, mo-1, da, h - offset, min, 0);
-    
+    // FIX 1: L'API Vercel scarica i dati già in UTC. Nessuna sottrazione necessaria!
+    var utcMs = Date.UTC(yr, mo-1, da, h, min, 0);
     return { utcDate: new Date(utcMs), isAllDay: false };
   } catch(e) {
     return { utcDate:null, isAllDay:false };
@@ -479,19 +474,12 @@ var MKTS=[
    note:'Pausa pranzo 11:30–12:30 ora Tokyo'},
 ];
 
-// Metodo infallibile: legge i minuti attuali ESATTI nel paese della borsa
+// FIX 2: Usa formatToParts per evitare che Safari scambi la data (5/12) per i minuti!
 function isMarketOpen(mkt) {
-  var now = new Date();
-  var wdStr = new Intl.DateTimeFormat('en-US', { timeZone: mkt.tz, weekday: 'short' }).format(now);
-  if (wdStr === 'Sat' || wdStr === 'Sun') return false;
+  var info = getHourInfoInTz(mkt.tz);
+  if (info.wd === 'Sat' || info.wd === 'Sun') return false;
 
-  var timeStr = new Intl.DateTimeFormat('en-US', { timeZone: mkt.tz, hour: 'numeric', minute: 'numeric', hour12: false }).format(now);
-  var match = timeStr.match(/(\d+)\D+(\d+)/);
-  if (!match) return false;
-  
-  var currentH = parseInt(match[1], 10);
-  if (currentH === 24) currentH = 0; // Fix specifico per un bug di Safari
-  var currentMinutes = currentH * 60 + parseInt(match[2], 10);
+  var currentMinutes = info.h * 60 + info.m;
 
   for (var i=0; i<mkt.sessions.length; i++) {
     var s = mkt.sessions[i];
@@ -502,14 +490,19 @@ function isMarketOpen(mkt) {
   return false;
 }
 
-// Converte l'apertura (es. 08:00 Londra) in orario locale utente (es. 09:00 Roma)
 function wallToUserDisplay(tz, h, m) {
-  var offset = getOffsetHours(tz);
-  var now = new Date();
-  var ms = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), h - offset, m, 0);
-  return new Intl.DateTimeFormat(navigator.language||'it-IT', {
-    timeZone: USER_TZ, hour: '2-digit', minute: '2-digit', hour12: false
-  }).format(new Date(ms));
+  var hMkt = getHourInfoInTz(tz).h;
+  var hUsr = getHourInfoInTz(USER_TZ).h;
+  
+  var diff = hUsr - hMkt;
+  if (diff < -12) diff += 24;
+  if (diff > 12) diff -= 24;
+  
+  var localH = h + diff;
+  if (localH >= 24) localH -= 24;
+  if (localH < 0) localH += 24;
+  
+  return String(localH).padStart(2, '0') + ':' + String(m).padStart(2, '0');
 }
 
 function renderMarketsHTML() {
@@ -540,11 +533,9 @@ function startMarkets() {
   tzEl.textContent = USER_TZ.replace(/_/g,' ');
 
   function tick() {
-    // Update clock
     document.getElementById('mkt-clock').textContent = new Intl.DateTimeFormat(
       navigator.language||'it-IT',{timeZone:USER_TZ,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}
     ).format(new Date());
-    // Re-render market cards every minute
     if (tick._counter % 60 === 0) {
       document.getElementById('markets-body').innerHTML = renderMarketsHTML();
     }
