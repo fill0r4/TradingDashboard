@@ -92,11 +92,7 @@ body{font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;back
 .past .event-currency{background:transparent!important;color:var(--past-text)!important;border-color:var(--past-border)!important}
 .event-title{font-size:14px;font-weight:600;color:var(--text);line-height:1.35}
 .past .event-title{color:var(--past-text)}
-.event-instruments{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
-.instr-pill{font-size:11px;font-weight:600;background:var(--acc-faded-bg);color:var(--acc-faded);border:1px solid var(--acc-faded-br);padding:2px 9px;border-radius:20px}
-.instr-pill.primary{background:var(--acc-bg);color:var(--acc);border-color:var(--acc-br)}
-.past .instr-pill,.past .instr-pill.primary{background:transparent;color:var(--past-text);border-color:var(--past-border)}
-.error-bar{background:var(--red-bg);border:1px solid var(--red-br);border-radius:10px;padding:14px 16px;margin-bottom:12px;font-size:14px;color:var(--red);display:none;align-items:flex-start;gap:10px}
+.past .error-bar{background:var(--red-bg);border:1px solid var(--red-br);border-radius:10px;padding:14px 16px;margin-bottom:12px;font-size:14px;color:var(--red);display:none;align-items:flex-start;gap:10px}
 .error-bar.show{display:flex}
 .refresh-row{display:flex;justify-content:center;padding:12px 0}
 .refresh-btn{background:var(--surface2);border:none;color:var(--muted);font-family:inherit;font-size:13px;padding:8px 20px;border-radius:20px;cursor:pointer;touch-action:manipulation}
@@ -339,37 +335,6 @@ function parseXML(xml) {
   } catch(e) { return []; }
 }
 
-// ─── INSTRUMENT MAPPING ─────────────────────────────────────────────────────
-var KW = [
-  {p:/german|germany|ifo|zew|buba|bundesbank|destatis/i,             pr:['GER40'],                          sc:['EURUSD','EURGBP']},
-  {p:/ecb|european central bank|euro.?zone|euro.?area|lagarde/i,    pr:['EURUSD','EURGBP','GER40'],        sc:[]},
-  {p:/french|france/i,                                               pr:['EURUSD','EURGBP'],                sc:['GER40']},
-  {p:/italian|italy/i,                                               pr:['EURUSD'],                         sc:['GER40','EURGBP']},
-  {p:/crude oil inv|eia crude|oil inv|petroleum inv|cushing/i,       pr:['USOIL'],                          sc:['US500','US100']},
-  {p:/crude|opec|petroleum|eia|oil price/i,                          pr:['USOIL'],                          sc:['US500']},
-  {p:/unemployment|jobless|initial claims|continuing claims/i,       pr:['US500','US100'],                  sc:['EURUSD','XAUUSD','USOIL','BTCUSD','AUDJPY']},
-  {p:/nonfarm|non-farm|nfp/i,                                        pr:['US500','US100','EURUSD','XAUUSD'],sc:['USOIL','BTCUSD','AUDJPY']},
-  {p:/fed |fomc|powell|federal reserve|interest rate/i,              pr:['US500','US100','XAUUSD','EURUSD'],sc:['USOIL','BTCUSD','AUDJPY','EURGBP']},
-  {p:/cpi|ppi|inflation|core.*price|price.*index/i,                  pr:['US500','US100','XAUUSD'],         sc:['EURUSD','USOIL','BTCUSD']},
-  {p:/gdp|retail sales|ism|flash.*pmi|services pmi|manufacturing pmi/i,pr:['US500','US100'],               sc:['EURUSD','XAUUSD','USOIL','BTCUSD']},
-  {p:/gold|silver|metal/i,                                           pr:['XAUUSD'],                         sc:[]},
-  {p:/bitcoin|crypto|btc/i,                                          pr:['BTCUSD'],                         sc:[]},
-  {p:/boe|bank of england|bailey|united kingdom|british/i,           pr:['EURGBP'],                         sc:['EURUSD']},
-  {p:/rba|reserve bank of australia|australian/i,                    pr:['AUDJPY'],                         sc:[]},
-  {p:/boj|bank of japan|ueda|japanese/i,                             pr:['AUDJPY'],                         sc:[]},
-];
-var CUR_FB = {
-  USD:{pr:['EURUSD','XAUUSD','USOIL','US500','US100'],sc:['BTCUSD','AUDJPY']},
-  EUR:{pr:['EURUSD','EURGBP','GER40'],sc:[]},
-  GBP:{pr:['EURGBP'],sc:['EURUSD']},
-  AUD:{pr:['AUDJPY'],sc:[]},
-  JPY:{pr:['AUDJPY'],sc:[]},
-};
-function resolveInstr(cur, title) {
-  for (var i=0;i<KW.length;i++) if(KW[i].p.test(title)) return {primary:KW[i].pr,secondary:KW[i].sc};
-  return {primary:(CUR_FB[cur]||{}).pr||[], secondary:(CUR_FB[cur]||{}).sc||[]};
-}
-
 // ─── RENDER NEWS ────────────────────────────────────────────────────────────
 var DN=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
 var MN=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
@@ -415,16 +380,12 @@ function renderFromCache() {
       if(!a.utcDate)return -1; if(!b.utcDate)return 1; return a.utcDate-b.utcDate;
     }).forEach(function(ev){
       var t=ev.isAllDay?'All Day':fmtLocal(ev.utcDate);
-      var past=!ev.isAllDay&&ev.utcDate&&ev.utcDate<now;
-      var instr=resolveInstr(ev.currency,ev.title);
-      var pills='';
-      instr.primary.forEach(function(i){pills+='<span class="instr-pill primary">'+i+'</span>';});
-      instr.secondary.forEach(function(i){pills+='<span class="instr-pill">'+i+'</span>';});
+      var past=!ev.isAllDay&&ev.utcDate&&ev.utcDate<now;});
       html+='<div class="event-card impact-'+ev.impact+(past?' past':'')+'"><div class="event-top">'
         +'<span class="event-time'+(ev.isAllDay?' allday':'')+'">'+(t)+'</span>'
         +'<span class="event-currency">'+ev.currency+'</span></div>'
         +'<div class="event-title">'+ev.title+'</div>'
-        +(pills?'<div class="event-instruments">'+pills+'</div>':'')
+        
         +'</div>';
     });
     html+='</div>';
