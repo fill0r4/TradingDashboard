@@ -263,64 +263,52 @@ function fmtWeekLabel(mon, sun) {
 }
 
 // ─── TIME CONVERSION ────────────────────────────────────────────────────────
-//
-// The API returns times as New York wall-clock (e.g. "8:30am" for 08:30 NY).
-// We need to display them in the user's local timezone.
-//
-// THE CORRECT APPROACH:
-// 1. Build the ISO string for that date/time AS IF it were UTC (naive).
-// 2. Format that naive UTC through the NY timezone via Intl to see what NY
-//    hour it maps to. The DIFFERENCE tells us the NY offset from UTC.
-// 3. Shift the naive UTC by that offset to get the real UTC instant.
-// 4. Display the real UTC in USER_TZ.
-//
-// This is equivalent to: realUTC = naiveUTC - (nyHour(naiveUTC) - naiveHour) * 60min
-// At noon UTC: if Intl says it's 08:00 NY, offset = 8-12 = -4h (EDT).
-// Event at 08:30 NY: realUTC = Date.UTC(yr,mo,da,8,30) - (-4*60min) = 12:30 UTC
-// Display in Rome (UTC+2): 14:30 ✓
+
+// Trova l'offset in ore (es. -4 per NY) in modo nativo e cross-browser
+function getOffsetHours(tz) {
+  try {
+    var parts = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'shortOffset' }).formatToParts(new Date());
+    var tzPart = parts.find(function(p){ return p.type === 'timeZoneName'; });
+    if (tzPart && tzPart.value !== 'GMT') {
+      var m = tzPart.value.match(/GMT([+-]\d+)/);
+      if (m) return parseInt(m[1], 10);
+    }
+    return 0; 
+  } catch(e) {
+    // Fallback di sicurezza
+    var loc = parseInt(new Intl.DateTimeFormat('en-US', {timeZone: tz, hour: 'numeric', hour12: false}).format(new Date()), 10);
+    var utc = parseInt(new Intl.DateTimeFormat('en-US', {timeZone: 'UTC', hour: 'numeric', hour12: false}).format(new Date()), 10);
+    var d = loc - utc;
+    if (d < -12) d += 24; if (d > 12) d -= 24;
+    return d;
+  }
+}
 
 function parseFFTime(dateStr, timeStr) {
   try {
     var ts = (timeStr||'').trim();
     if (!ts || ts==='All Day' || ts==='Tentative') return { utcDate:null, isAllDay:true };
 
-    // Parse date "MM-DD-YYYY"
     var dp = (dateStr||'').split('-');
     if (dp.length !== 3) return { utcDate:null, isAllDay:false };
     var mo=parseInt(dp[0],10), da=parseInt(dp[1],10), yr=parseInt(dp[2],10);
-    if (isNaN(mo)||isNaN(da)||isNaN(yr)) return { utcDate:null, isAllDay:false };
 
-    // Parse time "8:30am"
     var tm = ts.match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/i);
     if (!tm) return { utcDate:null, isAllDay:false };
     var h=parseInt(tm[1],10), min=parseInt(tm[2],10), ap=tm[3].toLowerCase();
     if (ap==='pm' && h!==12) h+=12;
     if (ap==='am' && h===12) h=0;
 
-    // Step 1: build naive UTC for noon on this date (safe reference)
-    var noonUTC = Date.UTC(yr, mo-1, da, 12, 0, 0);
-
-    // Step 2: ask Intl what hour New York shows for this noon UTC
-    // Use numeric hour to get a plain number string like "8" or "20"
-    var nyHourStr = new Intl.DateTimeFormat('en-US', {
-      timeZone: 'America/New_York',
-      hour: 'numeric', hour12: false
-    }).format(new Date(noonUTC));
-    // nyHourStr could be "8" (8am NY = UTC-4 EDT) or "7" (7am NY = UTC-5 EST)
-    var nyHour = parseInt(nyHourStr, 10) % 24;
-    // NY offset from UTC: if noon UTC shows as 8am NY, offset = 8-12 = -4
-    var nyOffsetH = nyHour - 12;
-
-    // Step 3: real UTC = event_NY_hour - nyOffsetH (hours from UTC to NY)
-    // utcHour = eventH - nyOffsetH  e.g. 8 - (-4) = 12
-    var utcMs = Date.UTC(yr, mo-1, da, h - nyOffsetH, min, 0);
+    // L'API è in ora di New York. Troviamo il suo offset attuale e calcoliamo l'UTC
+    var offset = getOffsetHours('America/New_York');
+    var utcMs = Date.UTC(yr, mo-1, da, h - offset, min, 0);
+    
     return { utcDate: new Date(utcMs), isAllDay: false };
   } catch(e) {
     return { utcDate:null, isAllDay:false };
   }
 }
 
-// Format a UTC Date for display in the user's local timezone
 function fmtLocal(utcDate) {
   if (!utcDate || isNaN(utcDate.getTime())) return '—';
   try {
@@ -328,7 +316,7 @@ function fmtLocal(utcDate) {
       timeZone: USER_TZ, hour:'2-digit', minute:'2-digit', hour12:false
     }).format(utcDate);
   } catch(e) {
-    return String(utcDate.getUTCHours()).padStart(2,'0')+':'+String(utcDate.getUTCMinutes()).padStart(2,'0');
+    return String(utcDate.getHours()).padStart(2,'0')+':'+String(utcDate.getMinutes()).padStart(2,'0');
   }
 }
 
@@ -358,7 +346,7 @@ function parseXML(xml) {
 
 // ─── INSTRUMENT MAPPING ─────────────────────────────────────────────────────
 var KW = [
-  {p:/german|germany|ifo|zew|buba|bundesbank|destatis/i,            pr:['GER40'],                          sc:['EURUSD','EURGBP']},
+  {p:/german|germany|ifo|zew|buba|bundesbank|destatis/i,             pr:['GER40'],                          sc:['EURUSD','EURGBP']},
   {p:/ecb|european central bank|euro.?zone|euro.?area|lagarde/i,    pr:['EURUSD','EURGBP','GER40'],        sc:[]},
   {p:/french|france/i,                                               pr:['EURUSD','EURGBP'],                sc:['GER40']},
   {p:/italian|italy/i,                                               pr:['EURUSD'],                         sc:['GER40','EURGBP']},
@@ -471,9 +459,6 @@ async function loadCalendar() {
 }
 
 // ─── MARKETS ────────────────────────────────────────────────────────────────
-// Key insight: to check if a market is open, we compare timestamps.
-// Convert market open/close wall-clock times to UTC timestamps for TODAY,
-// then compare against Date.now(). Intl gives us the offset cleanly.
 
 var MKTS=[
   {name:'New York',    flag:'🇺🇸',tz:'America/New_York',
@@ -494,48 +479,37 @@ var MKTS=[
    note:'Pausa pranzo 11:30–12:30 ora Tokyo'},
 ];
 
-// Convert a wall-clock time (h,m) in `tz` on TODAY's date to a UTC timestamp.
-// Uses the same noon-reference offset technique as parseFFTime.
-function wallToUTC(tz, h, m) {
-  var now = new Date();
-  // Get today's date string in that timezone: "YYYY-MM-DD"
-  var dateStr = now.toLocaleDateString('en-CA', { timeZone: tz }); // en-CA gives ISO format
-  var parts = dateStr.split('-');
-  var yr=+parts[0], mo=+parts[1], da=+parts[2];
-
-  // Get NY offset using noon reference
-  var noonUTC = Date.UTC(yr, mo-1, da, 12, 0, 0);
-  var localNoonH = parseInt(new Intl.DateTimeFormat('en-US',{
-    timeZone:tz, hour:'numeric', hour12:false
-  }).format(new Date(noonUTC)), 10) % 24;
-  var offsetH = localNoonH - 12; // e.g. Berlin CEST: 14-12=+2, London BST: 13-12=+1
-
-  // wall UTC = Date.UTC(yr,mo,da,h,m) - offsetH*60*60*1000
-  return Date.UTC(yr, mo-1, da, h - offsetH, m, 0);
-}
-
+// Metodo infallibile: legge i minuti attuali ESATTI nel paese della borsa
 function isMarketOpen(mkt) {
-  // Check if today is a weekend in the market's timezone
-  var wdStr = new Intl.DateTimeFormat('en-US', {
-    timeZone: mkt.tz, weekday: 'short'
-  }).format(new Date());
+  var now = new Date();
+  var wdStr = new Intl.DateTimeFormat('en-US', { timeZone: mkt.tz, weekday: 'short' }).format(now);
   if (wdStr === 'Sat' || wdStr === 'Sun') return false;
 
-  var nowMs = Date.now();
+  var timeStr = new Intl.DateTimeFormat('en-US', { timeZone: mkt.tz, hour: 'numeric', minute: 'numeric', hour12: false }).format(now);
+  var match = timeStr.match(/(\d+)\D+(\d+)/);
+  if (!match) return false;
+  
+  var currentH = parseInt(match[1], 10);
+  if (currentH === 24) currentH = 0; // Fix specifico per un bug di Safari
+  var currentMinutes = currentH * 60 + parseInt(match[2], 10);
+
   for (var i=0; i<mkt.sessions.length; i++) {
     var s = mkt.sessions[i];
-    var openMs  = wallToUTC(mkt.tz, s.open[0],  s.open[1]);
-    var closeMs = wallToUTC(mkt.tz, s.close[0], s.close[1]);
-    if (nowMs >= openMs && nowMs < closeMs) return true;
+    var openMinutes = s.open[0] * 60 + s.open[1];
+    var closeMinutes = s.close[0] * 60 + s.close[1];
+    if (currentMinutes >= openMinutes && currentMinutes < closeMinutes) return true;
   }
   return false;
 }
 
+// Converte l'apertura (es. 08:00 Londra) in orario locale utente (es. 09:00 Roma)
 function wallToUserDisplay(tz, h, m) {
-  var utcMs = wallToUTC(tz, h, m);
-  return new Intl.DateTimeFormat(navigator.language||'it-IT',{
-    timeZone:USER_TZ, hour:'2-digit', minute:'2-digit', hour12:false
-  }).format(new Date(utcMs));
+  var offset = getOffsetHours(tz);
+  var now = new Date();
+  var ms = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), h - offset, m, 0);
+  return new Intl.DateTimeFormat(navigator.language||'it-IT', {
+    timeZone: USER_TZ, hour: '2-digit', minute: '2-digit', hour12: false
+  }).format(new Date(ms));
 }
 
 function renderMarketsHTML() {
