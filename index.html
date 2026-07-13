@@ -284,8 +284,8 @@ var CFG = {
   EURUSD:{name:'EURUSD',label:'Euro/USD',   quoteCurrency:'USD',pipSize:0.0001,defaultCS:100000,precise:true},
   AUDJPY:{name:'AUDJPY',label:'AUD/JPY',    quoteCurrency:'JPY',pipSize:0.01,  defaultCS:100000,precise:true},
   EURGBP:{name:'EURGBP',label:'Euro/GBP',   quoteCurrency:'GBP',pipSize:0.0001,defaultCS:100000,precise:true},
-  USDSEK:{name:'USDSEK',label:'USD/SEK',    quoteCurrency:'SEK',pipSize:0.0001,defaultCS:100000,precise:true},
-  USDCAD:{name:'USDCAD',label:'USD/CAD',    quoteCurrency:'CAD',pipSize:0.0001,defaultCS:100000,precise:true},
+  USDSEK:{name:'USDSEK',label:'USD/SEK',    quoteCurrency:'SEK',pipSize:0.0001,defaultCS:100000,precise:true, useEntryPrice:true},
+  USDCAD:{name:'USDCAD',label:'USD/CAD',    quoteCurrency:'CAD',pipSize:0.0001,defaultCS:100000,precise:true, useEntryPrice:true},
   XAUUSD:{name:'XAUUSD',label:'Gold',       quoteCurrency:'USD',pipSize:0.01,  defaultCS:100,   precise:false},
   USOIL: {name:'USOIL', label:'Crude Oil',  quoteCurrency:'USD',pipSize:0.01,  defaultCS:100,   precise:false},
   BTCUSD:{name:'BTCUSD',label:'Bitcoin',    quoteCurrency:'USD',pipSize:1,     defaultCS:1,     precise:true},
@@ -366,7 +366,15 @@ function calculate(){
   var pDiff   = Math.abs(entry-exitP); // price distance
 
   // FX conversion
-  var fx = toUSD(c.quoteCurrency);
+  // For USD/XXX pairs (USDCAD, USDSEK): entry price IS the USD→XXX rate.
+  // pip value in USD = contractSize × pipSize / entry  (e.g. 10 CAD / 1.4142 = $7.07)
+  // For all other pairs: use real-time FX API rate.
+  var fx;
+  if (c.useEntryPrice) {
+    fx = { rate: 1 / entry, label: 'tasso dal prezzo entry (' + entry.toFixed(5) + ')' };
+  } else {
+    fx = toUSD(c.quoteCurrency);
+  }
 
   // Point value per lot in USD:
   // 1 pip move × contractSize units × fx rate = USD gain per pip per lot
