@@ -1,15 +1,1 @@
-{
-  "name": "Trading Dashboard",
-  "short_name": "Trading",
-  "description": "Position sizing, risk management e calendario macro",
-  "start_url": "/lot-calc/",
-  "scope": "/lot-calc/",
-  "display": "standalone",
-  "background_color": "#0c0c0c",
-  "theme_color": "#0c0c0c",
-  "orientation": "portrait",
-  "icons": [
-    { "src": "/lot-calc/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/lot-calc/icon-512.png", "sizes": "512x512", "type": "image/png" }
-  ]
-}
+{"name":"Trading Dashboard","short_name":"Trading","description":"Position sizing, risk management e calendario macro","start_url":"/lot-calc/","scope":"/lot-calc/","display":"standalone","background_color":"#0c0c0c","theme_color":"#0c0c0c","orientation":"portrait","icons":[{"src":"/lot-calc/icon-192.png","sizes":"192x192","type":"image/png"},{"src":"/lot-calc/icon-512.png","sizes":"512x512","type":"image/png"}]}
